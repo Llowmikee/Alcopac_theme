@@ -3226,86 +3226,140 @@
     function promoteFolderButtons(force) {
       var root = document.querySelector('.full-start-new') || document.querySelector('.full-start');
       if (!root) return;
+
       var hideExtraButtons = Lampa.Storage.get('lampac_screen_hide_extra_buttons', 'off') === 'on';
       var smartOrder = Lampa.Storage.get('lampac_screen_smart_order', 'on') === 'on';
-
-      var buttons = root.querySelector('.full-start-new__buttons') || root.querySelector('.full-start__buttons');
-      var container = root.querySelector('.buttons--container');
-      if (!buttons || !container) return;
-      if (!force && buttons.getAttribute('data-unfolded') === '1') return;
-
-      var extraButtons = container.querySelectorAll('.full-start__button');
-      for (var i = 0; i < extraButtons.length; i++) {
-        var btn = extraButtons[i];
-        btn.classList.remove('hide');
-        buttons.appendChild(btn);
-      }
-
-      var optionsBtn = buttons.querySelector('.button--options');
-      if (hideExtraButtons && optionsBtn && optionsBtn.parentNode) optionsBtn.parentNode.removeChild(optionsBtn);
-
-      var reactionBtn = buttons.querySelector('.button--reaction');
-      if (hideExtraButtons && reactionBtn && reactionBtn.parentNode) reactionBtn.parentNode.removeChild(reactionBtn);
-
-      var playBtn = buttons.querySelector('.button--play');
-      if (hideExtraButtons && playBtn && playBtn.parentNode) playBtn.parentNode.removeChild(playBtn);
-
-      // Order: online, torrents, trailers, favorites
-      var all = Array.prototype.slice.call(buttons.querySelectorAll('.full-start__button, .selector'));
-
-      function findByText(re) {
-        for (var i = 0; i < all.length; i++) {
-          if (re.test((all[i].textContent || '').trim())) return all[i];
-        }
-        return null;
-      }
-
-      var onlineBtn = buttons.querySelector('.view--online, .lampac--button') || findByText(/(онлайн|online|lampac)/i);
-      var torrentBtn = buttons.querySelector('.view--torrent') || findByText(/(торрент|torrent)/i);
-      var trailerBtn = buttons.querySelector('.view--trailer') || findByText(/(трейлер|trailer)/i);
-      var favBtn = buttons.querySelector('.button--book') || findByText(/(избран|book)/i);
-
-      var map = { online: onlineBtn, torrent: torrentBtn, trailer: trailerBtn, book: favBtn };
       var orderString = Lampa.Storage.get('lampac_screen_button_order', 'online,torrent,trailer,book');
       var orderTokens = orderString.split(',').map(function (x) { return x.trim(); }).filter(Boolean);
-      var ordered = [];
-      for (var t = 0; t < orderTokens.length; t++) {
-        var key = orderTokens[t];
-        if (key === 'trailer' && hideExtraButtons) continue;
-        if (map[key] && ordered.indexOf(map[key]) === -1) ordered.push(map[key]);
+
+      var buttonsEl = root.querySelector('.full-start-new__buttons') || root.querySelector('.full-start__buttons');
+      var container = root.querySelector('.buttons--container');
+      if (!buttonsEl || !container) return;
+      if (!force && buttonsEl.getAttribute('data-unfolded') === '1') return;
+
+      var buttons_container = $(buttonsEl);
+      var changed = false;
+
+      function getButtonsByText(re) {
+        var found = $();
+        buttons_container.find('.full-start__button, .selector').each(function () {
+          if (re.test((this.textContent || '').trim())) found = found.add(this);
+        });
+        return found.first();
       }
 
-      if (smartOrder) {
-        // Append in strict order first
-        for (var o = 0; o < ordered.length; o++) {
-          if (ordered[o].parentNode === buttons) buttons.appendChild(ordered[o]);
+      function getButtonMap() {
+        var onlineBtn = buttons_container.find('.view--online, .lampac--button').first();
+        if (!onlineBtn.length) onlineBtn = getButtonsByText(/(онлайн|online|lampac)/i);
+
+        var torrentBtn = buttons_container.find('.view--torrent').first();
+        if (!torrentBtn.length) torrentBtn = getButtonsByText(/(торрент|torrent)/i);
+
+        var trailerBtn = buttons_container.find('.view--trailer').first();
+        if (!trailerBtn.length) trailerBtn = getButtonsByText(/(трейлер|trailer)/i);
+
+        var favBtn = buttons_container.find('.button--book').first();
+        if (!favBtn.length) favBtn = getButtonsByText(/(избран|book)/i);
+
+        return { online: onlineBtn, torrent: torrentBtn, trailer: trailerBtn, book: favBtn };
+      }
+
+      // Move hidden/service buttons from overflow container into the main row first.
+      $(container).find('.full-start__button').each(function () {
+        this.classList.remove('hide');
+        buttonsEl.appendChild(this);
+        changed = true;
+      });
+
+      if (hideExtraButtons) {
+        buttons_container.find('.button--options, .button--reaction, .button--play').remove();
+      }
+
+      var attempts = 0;
+      var maxAttempts = 18;
+      var checkButton = setInterval(function () {
+        attempts++;
+
+        // Refresh references after late DOM draws.
+        root = document.querySelector('.full-start-new') || document.querySelector('.full-start');
+        if (!root) {
+          clearInterval(checkButton);
+          return;
         }
 
-        // Then append any remaining buttons (excluding removed ones) preserving their current order
-        var remaining = Array.prototype.slice.call(buttons.querySelectorAll('.full-start__button, .selector'));
-        for (var r = 0; r < remaining.length; r++) {
-          if (ordered.indexOf(remaining[r]) === -1) {
-            buttons.appendChild(remaining[r]);
+        buttonsEl = root.querySelector('.full-start-new__buttons') || root.querySelector('.full-start__buttons');
+        container = root.querySelector('.buttons--container');
+        if (!buttonsEl || !container) {
+          if (attempts >= maxAttempts) clearInterval(checkButton);
+          return;
+        }
+
+        buttons_container = $(buttonsEl);
+        var map = getButtonMap();
+        var onlineBtn = map.online;
+
+        if (smartOrder) {
+          var ordered = [];
+          for (var t = 0; t < orderTokens.length; t++) {
+            var key = orderTokens[t];
+            if (key === 'trailer' && hideExtraButtons) continue;
+            if (map[key] && map[key].length) ordered.push(map[key][0]);
+          }
+
+          for (var i = ordered.length - 1; i >= 0; i--) {
+            if (ordered[i] && ordered[i].parentNode === buttonsEl) {
+              buttonsEl.prepend(ordered[i]);
+              changed = true;
+            }
           }
         }
-      }
 
-      if (hideExtraButtons && trailerBtn && trailerBtn.parentNode) trailerBtn.parentNode.removeChild(trailerBtn);
+        if (hideExtraButtons) {
+          var before = buttons_container.find('.view--trailer').length;
+          buttons_container.find('.view--trailer').remove();
+          if (before) changed = true;
+        }
 
-      // Focus online button by default
-      if (smartOrder && onlineBtn) {
-        setTimeout(function () {
+        if (onlineBtn.length || attempts >= maxAttempts) {
+          clearInterval(checkButton);
+          buttonsEl.setAttribute('data-unfolded', '1');
+
           try {
-            if (window.Lampa && Lampa.Controller && Lampa.Controller.focus) {
-              Lampa.Controller.focus(onlineBtn);
-            } else {
-              onlineBtn.classList.add('focus');
+            if (window.Lampa && Lampa.Controller) {
+              if (Lampa.Controller.toggle) Lampa.Controller.toggle('full_start');
+              if (Lampa.Controller.collectionSet) Lampa.Controller.collectionSet(buttons_container);
             }
           } catch (e) {}
-        }, 80);
-      }
 
-      buttons.setAttribute('data-unfolded', '1');
+          if (onlineBtn.length) {
+            setTimeout(function () {
+              try {
+                if (window.Lampa && Lampa.Controller) {
+                  if (Lampa.Controller.toggle) Lampa.Controller.toggle('full_start');
+                  if (Lampa.Controller.collectionSet) Lampa.Controller.collectionSet(buttons_container);
+                  if (Lampa.Controller.focus) Lampa.Controller.focus(onlineBtn[0]);
+                } else {
+                  onlineBtn.addClass('focus');
+                }
+              } catch (e) {}
+            }, 90);
+
+            setTimeout(function () {
+              try {
+                if (window.Lampa && Lampa.Controller && Lampa.Controller.focus) {
+                  Lampa.Controller.focus(onlineBtn[0]);
+                } else {
+                  onlineBtn.addClass('focus');
+                }
+              } catch (e) {}
+            }, 220);
+          }
+        }
+      }, 120);
+
+      setTimeout(function () {
+        try { clearInterval(checkButton); } catch (e) {}
+      }, 3000);
     }
 
     // Fix stale quality: hide cam/ts/tc for movies released >60 days ago
