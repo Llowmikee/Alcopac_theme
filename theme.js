@@ -6,7 +6,62 @@
 
   var STORAGE_KEY = 'lampac_theme';
   var STYLE_ID = 'lampac-theme-style';
+  var MOBILE_BUTTON_STYLE_ID = 'lampac-mobile-button-theme-style';
   var ALL_CLASSES = ['neon--theme', 'aurora--theme', 'gold--theme', 'mono--theme', 'sunset--theme', 'glass--theme', 'appletv--theme', 'custom--theme'];
+
+  function isMobileViewport() {
+    return (window.innerWidth || 1280) <= 600;
+  }
+
+  function getThemeButtonTokens(name) {
+    var map = {
+      classic: { text: '#f5f7fb', panelBg: 'rgba(28,28,30,0.88)', line: 'rgba(255,255,255,0.12)', accent: '#ffffff', glow: 'rgba(255,255,255,0.20)' },
+      neon: { text: '#e2e8f4', panelBg: 'rgba(8,14,30,0.88)', line: 'rgba(0,229,255,0.22)', accent: '#00e5ff', glow: 'rgba(0,229,255,0.28)' },
+      aurora: { text: '#ece4f8', panelBg: 'rgba(20,10,34,0.88)', line: 'rgba(196,113,237,0.22)', accent: '#c471ed', glow: 'rgba(196,113,237,0.24)' },
+      gold: { text: '#fff7e6', panelBg: 'rgba(26,18,8,0.88)', line: 'rgba(245,196,81,0.24)', accent: '#f5c451', glow: 'rgba(245,196,81,0.24)' },
+      mono: { text: '#f1f1f1', panelBg: 'rgba(18,18,18,0.90)', line: 'rgba(255,255,255,0.18)', accent: '#ffffff', glow: 'rgba(255,255,255,0.16)' },
+      sunset: { text: '#fff3eb', panelBg: 'rgba(36,15,13,0.88)', line: 'rgba(255,127,80,0.22)', accent: '#ff7f50', glow: 'rgba(255,127,80,0.24)' },
+      glass: { text: '#f7fbff', panelBg: 'rgba(255,255,255,0.10)', line: 'rgba(255,255,255,0.14)', accent: '#ffffff', glow: 'rgba(255,255,255,0.20)' },
+      appletv: { text: '#f5f7fb', panelBg: 'rgba(8,10,18,0.54)', line: 'rgba(255,255,255,0.12)', accent: '#ffffff', glow: 'rgba(255,255,255,0.20)' },
+      custom: { text: '#f5f7fb', panelBg: 'rgba(8,10,18,0.54)', line: 'rgba(255,255,255,0.12)', accent: '#ffffff', glow: 'rgba(255,255,255,0.20)' }
+    };
+    return map[name] || map.classic;
+  }
+
+  function applyMobileButtonTheme(name) {
+    var existing = document.getElementById(MOBILE_BUTTON_STYLE_ID);
+    if (existing && existing.parentNode) existing.parentNode.removeChild(existing);
+    if (!isMobileViewport()) return;
+
+    var t = getThemeButtonTokens(name || 'classic');
+    var style = document.createElement('style');
+    style.id = MOBILE_BUTTON_STYLE_ID;
+    style.type = 'text/css';
+    style.textContent = [
+      '@media screen and (max-width: 480px) {',
+      '.full-start-new__buttons .full-start__button, .full-start-new__buttons .full-start-new__button, .full-start-new__buttons .selector, .full-start__buttons .full-start__button, .full-start__buttons .full-start-new__button, .full-start__buttons .selector{',
+      'background:' + t.panelBg + ' !important;',
+      'border:1px solid ' + t.line + ' !important;',
+      'color:' + t.text + ' !important;',
+      'box-shadow:0 10px 24px rgba(0,0,0,.18), inset 0 1px 0 rgba(255,255,255,.04) !important;',
+      '}',
+      '.full-start-new__buttons .full-start__button.focus, .full-start-new__buttons .full-start-new__button.focus, .full-start-new__buttons .selector.focus, .full-start__buttons .full-start__button.focus, .full-start__buttons .full-start-new__button.focus, .full-start__buttons .selector.focus, .full-start-new__buttons .full-start__button.hover, .full-start-new__buttons .full-start-new__button.hover, .full-start-new__buttons .selector.hover, .full-start__buttons .full-start__button.hover, .full-start__buttons .full-start-new__button.hover, .full-start__buttons .selector.hover{',
+      'border-color:' + t.accent + ' !important;',
+      'box-shadow:0 0 0 1px ' + t.line + ', 0 0 18px ' + t.glow + ' !important;',
+      '}',
+      '.full-start-new__buttons .full-start__button svg, .full-start-new__buttons .full-start-new__button svg, .full-start-new__buttons .selector svg, .full-start__buttons .full-start__button svg, .full-start__buttons .full-start-new__button svg, .full-start__buttons .selector svg{',
+      'color:' + t.text + ' !important;',
+      '}',
+      '}'
+    ].join('\n');
+    document.head.appendChild(style);
+  }
+
+  function applyMobileThemeButtonsOnly(name) {
+    var themeName = name || (window.Lampa && Lampa.Storage ? Lampa.Storage.get(STORAGE_KEY, 'classic') : 'classic');
+    applyTheme(themeName);
+    applyMobileButtonTheme(themeName);
+  }
 
   // ═══════════════════════════════════════════════════════════
   //  Theme CSS Generator
@@ -844,6 +899,10 @@
 
   // ─── Theme Application ──────────────────────────────────
   function applyTheme(name) {
+    if (isMobileViewport()) {
+      applyMobileButtonTheme(name);
+      return;
+    }
     var existing = document.getElementById(STYLE_ID);
     if (existing) existing.parentNode.removeChild(existing);
     // Also remove ::before pseudo-element (custom/glass ambient)
@@ -880,6 +939,26 @@
       return tvHint ? 'tv' : 'desktop';
     }
 
+    function registerInterface1MobileTemplate() {
+      if (getDeviceType() !== 'mobile') return;
+      if (Lampa.Storage.get('lampac_screen_mobile_style', 'interface1') !== 'interface1') return;
+      if (!(window.Lampa && Lampa.Template && Lampa.Template.add)) return;
+
+      Lampa.Template.add('full_start_new', '<div class="full-start-new">\n\n<div class="full-start-new__body">\n<div class="full-start-new__left">\n<div class="full-start-new__poster">\n<img class="full-start-new__img full--poster" />\n</div>\n</div>\n\n<div class="full-start-new__right">\n<div class="full-start-new__head"></div>\n<div class="full-start-new__title">{title}</div>\n<div class="full-start-new__tagline full--tagline">{tagline}</div>\n<div class="full-start-new__rate-line">\n<div class="full-start__rate rate--tmdb"><div>{rating}</div><div class="source--name">TMDB</div></div>\n<div class="full-start__rate rate--imdb hide"><div></div><div class="source--name">IMDb</div></div>\n<div class="full-start__rate rate--kp hide"><div></div><div class="source--name">КП</div></div>\n\n<div class="full-start__pg hide"></div>\n<div class="full-start__status hide"></div>\n</div>\n<div class="full-start-new__details"></div>\n<div class="full-start-new__reactions">\n<div>#{reactions_none}</div>\n</div>\n\n<div class="full-start-new__buttons">\n<div class="full-start__button selector button--play">\n<svg width="28" height="29" viewBox="0 0 28 29" fill="none" xmlns="http://www.w3.org/2000/svg">\n<circle cx="14" cy="14.5" r="13" stroke="currentColor" stroke-width="2.7"/>\n<path d="M18.0739 13.634C18.7406 14.0189 18.7406 14.9811 18.0739 15.366L11.751 19.0166C11.0843 19.4015 10.251 18.9204 10.251 18.1506L10.251 10.8494C10.251 10.0796 11.0843 9.5985 11.751 9.9834L18.0739 13.634Z" fill="currentColor"/>\n</svg>\n\n<span>#{title_watch}</span>\n</div>\n\n<div class="full-start__button selector view--torrent">\n<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 50 50" width="50px" height="50px">\n<path d="M25,2C12.317,2,2,12.317,2,25s10.317,23,23,23s23-10.317,23-23S37.683,2,25,2z M40.5,30.963c-3.1,0-4.9-2.4-4.9-2.4 S34.1,35,27,35c-1.4,0-3.6-0.837-3.6-0.837l4.17,9.643C26.727,43.92,25.874,44,25,44c-2.157,0-4.222-0.377-6.155-1.039L9.237,16.851 c0,0-0.7-1.2,0.4-1.5c1.1-0.3,5.4-1.2,5.4-1.2s1.475-0.494,1.8,0.5c0.5,1.3,4.063,11.112,4.063,11.112S22.6,29,27.4,29 c4.7,0,5.9-3.437,5.7-3.937c-1.2-3-4.993-11.862-4.993-11.862s-0.6-1.1,0.8-1.4c1.4-0.3,3.8-0.7,3.8-0.7s1.105-0.163,1.6,0.8 c0.738,1.437,5.193,11.262,5.193,11.262s1.1,2.9,3.3,2.9c0.464,0,0.834-0.046,1.152-0.104c-0.082,1.635-0.348,3.221-0.817,4.722 C42.541,30.867,41.756,30.963,40.5,30.963z" fill="currentColor"/>\n</svg>\n\n<span>#{full_torrents}</span>\n</div>\n\n<div class="full-start__button selector view--trailer">\n<svg height="70" viewBox="0 0 80 70" fill="none" xmlns="http://www.w3.org/2000/svg">\n<path fill-rule="evenodd" clip-rule="evenodd" d="M71.2555 2.08955C74.6975 3.2397 77.4083 6.62804 78.3283 10.9306C80 18.7291 80 35 80 35C80 35 80 51.2709 78.3283 59.0694C77.4083 63.372 74.6975 66.7603 71.2555 67.9104C65.0167 70 40 70 40 70C40 70 14.9833 70 8.74453 67.9104C5.3025 66.7603 2.59172 63.372 1.67172 59.0694C0 51.2709 0 35 0 35C0 35 0 18.7291 1.67172 10.9306C2.59172 6.62804 5.3025 3.2395 8.74453 2.08955C14.9833 0 40 0 40 0C40 0 65.0167 0 71.2555 2.08955ZM55.5909 35.0004L29.9773 49.5714V20.4286L55.5909 35.0004Z" fill="currentColor"></path>\n</svg>\n\n<span>#{full_trailers}</span>\n</div>\n<div class="full-start__button selector button--book">\n<svg width="21" height="32" viewBox="0 0 21 32" fill="none" xmlns="http://www.w3.org/2000/svg">\n<path d="M2 1.5H19C19.2761 1.5 19.5 1.72386 19.5 2V27.9618C19.5 28.3756 19.0261 28.6103 18.697 28.3595L12.6212 23.7303C11.3682 22.7757 9.63183 22.7757 8.37885 23.7303L2.30302 28.3595C1.9739 28.6103 1.5 28.3756 1.5 27.9618V2C1.5 1.72386 1.72386 1.5 2 1.5Z" stroke="currentColor" stroke-width="2.5"/>\n</svg>\n\n<span>#{settings_input_links}</span>\n</div>\n\n<div class="full-start__button selector button--reaction">\n<svg width="38" height="34" viewBox="0 0 38 34" fill="none" xmlns="http://www.w3.org/2000/svg">\n<path d="M37.208 10.9742C37.1364 10.8013 37.0314 10.6441 36.899 10.5117C36.7666 10.3794 36.6095 10.2744 36.4365 10.2028L12.0658 0.108375C11.7166 -0.0361828 11.3242 -0.0361227 10.9749 0.108542C10.6257 0.253206 10.3482 0.530634 10.2034 0.879836L0.108666 25.2507C0.0369593 25.4236 3.37953e-05 25.609 2.3187e-08 25.7962C-3.37489e-05 25.9834 0.0368249 26.1688 0.108469 26.3418C0.180114 26.5147 0.28514 26.6719 0.417545 26.8042C0.54995 26.9366 0.707139 27.0416 0.880127 27.1131L17.2452 33.8917C17.5945 34.0361 17.9869 34.0361 18.3362 33.8917L29.6574 29.2017C29.8304 29.1301 29.9875 29.0251 30.1199 28.8928C30.2523 28.7604 30.3573 28.6032 30.4289 28.4303L37.2078 12.065C37.2795 11.8921 37.3164 11.7068 37.3164 11.5196C37.3165 11.3325 37.2796 11.1471 37.208 10.9742ZM20.425 29.9407L21.8784 26.4316L25.3873 27.885L20.425 29.9407ZM28.3407 26.0222L21.6524 23.252C21.3031 23.1075 20.9107 23.1076 20.5615 23.2523C20.2123 23.3969 19.9348 23.6743 19.79 24.0235L17.0194 30.7123L3.28783 25.0247L12.2918 3.28773L34.0286 12.2912L28.3407 26.0222Z" fill="currentColor"/>\n<path d="M25.3493 16.976L24.258 14.3423L16.959 17.3666L15.7196 14.375L13.0859 15.4659L15.4161 21.0916L25.3493 16.976Z" fill="currentColor"/>\n</svg>                \n\n<span>#{title_reactions}</span>\n</div>\n\n<div class="full-start__button selector button--subscribe hide">\n<svg width="25" height="30" viewBox="0 0 25 30" fill="none" xmlns="http://www.w3.org/2000/svg">\n<path d="M6.01892 24C6.27423 27.3562 9.07836 30 12.5 30C15.9216 30 18.7257 27.3562 18.981 24H15.9645C15.7219 25.6961 14.2632 27 12.5 27C10.7367 27 9.27804 25.6961 9.03542 24H6.01892Z" fill="currentColor"/>\n<path d="M3.81972 14.5957V10.2679C3.81972 5.41336 7.7181 1.5 12.5 1.5C17.2819 1.5 21.1803 5.41336 21.1803 10.2679V14.5957C21.1803 15.8462 21.5399 17.0709 22.2168 18.1213L23.0727 19.4494C24.2077 21.2106 22.9392 23.5 20.9098 23.5H4.09021C2.06084 23.5 0.792282 21.2106 1.9273 19.4494L2.78317 18.1213C3.46012 17.0709 3.81972 15.8462 3.81972 14.5957Z" stroke="currentColor" stroke-width="2.5"/>\n</svg>\n\n<span>#{title_subscribe}</span>\n</div>\n\n<div class="full-start__button selector button--options">\n<svg width="38" height="10" viewBox="0 0 38 10" fill="none" xmlns="http://www.w3.org/2000/svg">\n<circle cx="4.88968" cy="4.98563" r="4.75394" fill="currentColor"/>\n<circle cx="18.9746" cy="4.98563" r="4.75394" fill="currentColor"/>\n<circle cx="33.0596" cy="4.98563" r="4.75394" fill="currentColor"/>\n</svg>\n</div>\n\n</div>\n</div>\n</div>');
+    }
+
+    function normalizeFullButtonSelectors(root) {
+      root = root || getActiveFullRoot();
+      if (!root) return;
+      var buttons = root.querySelector('.full-start-new__buttons') || root.querySelector('.full-start__buttons');
+      if (!buttons) return;
+      var items = buttons.querySelectorAll('.full-start__button, .full-start-new__button');
+      for (var i = 0; i < items.length; i++) {
+        var el = items[i];
+        if (!el.classList.contains('selector')) el.classList.add('selector');
+      }
+    }
+
     function applyThemeProfile(name) {
       if (name === 'manual') return;
       var p = {
@@ -889,8 +968,7 @@
           lampac_screen_compact_mode: 'normal',
           lampac_screen_bg_dim: 'medium',
           lampac_screen_button_size: 'large',
-          lampac_screen_button_size_desktop: 'large',
-          lampac_screen_button_size_mobile: 'large'
+          lampac_screen_button_size_desktop: 'large'
         },
         series: {
           lampac_theme: 'glass',
@@ -898,8 +976,7 @@
           lampac_screen_compact_mode: 'compact',
           lampac_screen_bg_dim: 'low',
           lampac_screen_button_size: 'normal',
-          lampac_screen_button_size_desktop: 'normal',
-          lampac_screen_button_size_mobile: 'normal'
+          lampac_screen_button_size_desktop: 'normal'
         },
         kids: {
           lampac_theme: 'sunset',
@@ -907,12 +984,18 @@
           lampac_screen_compact_mode: 'normal',
           lampac_screen_bg_dim: 'none',
           lampac_screen_button_size: 'xl',
-          lampac_screen_button_size_desktop: 'xl',
-          lampac_screen_button_size_mobile: 'xl'
+          lampac_screen_button_size_desktop: 'xl'
         }
       }[name];
       if (!p) return;
+      if (getDeviceType() === 'mobile') {
+        if (p.lampac_theme) Lampa.Storage.set('lampac_theme', p.lampac_theme);
+        applyMobileThemeButtonsOnly(Lampa.Storage.get(STORAGE_KEY, 'classic'));
+        showInfo('Профиль применен: ' + name);
+        return;
+      }
       Object.keys(p).forEach(function (k) { Lampa.Storage.set(k, p[k]); });
+      registerInterface1MobileTemplate();
       applyTheme(Lampa.Storage.get(STORAGE_KEY, 'classic'));
       applyCardDisplay();
       applyScreenStyle();
@@ -934,9 +1017,8 @@
           'lampac_card_text_mode',
           'lampac_card_grid',
           'lampac_screen_layout',
-          'lampac_screen_mobile_layout',
+          'lampac_screen_mobile_style',
           'lampac_screen_button_size_desktop',
-          'lampac_screen_button_size_mobile',
           'lampac_screen_button_size',
           'lampac_screen_compact_mode',
           'lampac_screen_compact_meta',
@@ -945,7 +1027,6 @@
           'lampac_screen_tv_mode',
           'lampac_screen_bg_dim',
           'lampac_screen_device_profiles',
-          'lampac_screen_profile_mobile',
           'lampac_screen_profile_desktop',
           'lampac_screen_profile_tv',
           'lampac_screen_card_preset'
@@ -987,10 +1068,9 @@
             lampac_card_text_mode: 'default',
             lampac_card_grid: 'default',
             lampac_screen_layout: 'default',
-            lampac_screen_mobile_layout: 'poster',
+            lampac_screen_mobile_style: 'interface1',
             lampac_screen_button_size: 'normal',
-          lampac_screen_button_size_desktop: 'normal',
-          lampac_screen_button_size_mobile: 'normal',
+            lampac_screen_button_size_desktop: 'normal',
             lampac_screen_compact_mode: 'normal',
             lampac_screen_compact_meta: 'off',
             lampac_screen_button_order: 'online,torrent,trailer,book',
@@ -998,12 +1078,12 @@
             lampac_screen_tv_mode: 'off',
             lampac_screen_bg_dim: 'none',
             lampac_screen_device_profiles: 'off',
-            lampac_screen_profile_mobile: 'normal',
             lampac_screen_profile_desktop: 'normal',
             lampac_screen_profile_tv: 'cinema',
             lampac_screen_card_preset: 'default'
           };
           Object.keys(defaults).forEach(function (k) { Lampa.Storage.set(k, defaults[k]); });
+          registerInterface1MobileTemplate();
           applyTheme(Lampa.Storage.get(STORAGE_KEY, 'classic'));
           applyCardDisplay();
           applyScreenStyle();
@@ -1054,8 +1134,8 @@
             'Тема: ' + Lampa.Storage.get('lampac_theme', 'classic'),
             'Профиль темы: ' + Lampa.Storage.get('lampac_theme_profile', 'default'),
             'Экран: ' + Lampa.Storage.get('lampac_screen_layout', 'default'),
-            'Mobile: ' + Lampa.Storage.get('lampac_screen_mobile_layout', 'poster'),
-            'Кнопки TV/браузер: ' + Lampa.Storage.get('lampac_screen_button_size_desktop', Lampa.Storage.get('lampac_screen_button_size', 'normal')) + ' | Mobile: ' + Lampa.Storage.get('lampac_screen_button_size_mobile', Lampa.Storage.get('lampac_screen_button_size', 'normal')),
+            'Mobile-стиль: ' + Lampa.Storage.get('lampac_screen_mobile_style', 'interface1'),
+            'Кнопки TV/браузер: ' + Lampa.Storage.get('lampac_screen_button_size_desktop', Lampa.Storage.get('lampac_screen_button_size', 'normal')),
             'Компактный: ' + Lampa.Storage.get('lampac_screen_compact_mode', 'normal'),
             'Meta line: ' + Lampa.Storage.get('lampac_screen_compact_meta', 'off'),
             'Порядок кнопок: ' + Lampa.Storage.get('lampac_screen_button_order', 'online,torrent,trailer,book'),
@@ -1064,7 +1144,6 @@
             'Легковесный режим: ' + Lampa.Storage.get('lampac_screen_tv_mode', 'off'),
             'Затемнение: ' + Lampa.Storage.get('lampac_screen_bg_dim', 'none'),
             'Профили устройств: ' + Lampa.Storage.get('lampac_screen_device_profiles', 'off'),
-            'Mobile-профиль: ' + Lampa.Storage.get('lampac_screen_profile_mobile', 'normal'),
             'Desktop-профиль: ' + Lampa.Storage.get('lampac_screen_profile_desktop', 'normal'),
             'TV-профиль: ' + Lampa.Storage.get('lampac_screen_profile_tv', 'cinema'),
             'Facade: ' + (!!facade && !!facade.version ? facade.version : 'n/a'),
@@ -1125,7 +1204,6 @@
       Lampa.Template.add('settings_theme_scene_custom', '<div></div>');
       Lampa.Template.add('settings_theme_general', '<div></div>');
       Lampa.Template.add('settings_theme_schedule', '<div></div>');
-      Lampa.Template.add('settings_theme_mobile', '<div></div>');
       Lampa.Template.add('settings_theme_custom', '<div></div>');
     }
 
@@ -1180,6 +1258,8 @@
 
     function applyInterfaceScene(name) {
       var scene = name || Lampa.Storage.get('lampac_interface_scene', 'classic');
+      var deviceType = getDeviceType();
+      if (deviceType === 'mobile') scene = 'androidtv';
       var map = {
         classic: {
           lampac_theme: 'classic',
@@ -1188,17 +1268,15 @@
           lampac_theme_day: 'classic',
           lampac_theme_night: 'appletv',
           lampac_screen_layout: 'default',
-          lampac_screen_mobile_layout: 'poster',
+          lampac_screen_mobile_style: 'interface1',
           lampac_screen_compact_mode: 'normal',
           lampac_screen_compact_meta: 'off',
           lampac_screen_button_size: 'normal',
           lampac_screen_button_size_desktop: 'normal',
-          lampac_screen_button_size_mobile: 'normal',
           lampac_screen_button_order: 'online,torrent,trailer,book',
           lampac_screen_hide_extra_buttons: 'off',
           lampac_screen_smart_order: 'on',
-          lampac_screen_mobile_buttons_view: 'row',
-          lampac_screen_title_logo: 'hide',
+          lampac_screen_title_logo: 'show',
           lampac_screen_logo_size: 'small',
           lampac_screen_logo_us: 'hide',
           lampac_screen_tv_mode: 'off',
@@ -1210,7 +1288,6 @@
           lampac_screen_tagline: 'show',
           lampac_screen_descr: 'show',
           lampac_screen_overlay_opacity: '86',
-          lampac_screen_auto_contrast: 'off',
           lampac_screen_buttons_folder: 'off',
           lampac_screen_cinema_descr_size: 'medium',
           lampac_card_style: 'default',
@@ -1233,16 +1310,14 @@
           lampac_theme_day: 'classic',
           lampac_theme_night: 'classic',
           lampac_screen_layout: 'cinematic',
-          lampac_screen_mobile_layout: 'poster',
+          lampac_screen_mobile_style: 'interface1',
           lampac_screen_compact_mode: 'normal',
           lampac_screen_compact_meta: 'off',
           lampac_screen_button_size: 'normal',
           lampac_screen_button_size_desktop: 'normal',
-          lampac_screen_button_size_mobile: 'large',
           lampac_screen_button_order: 'online,torrent,trailer,book',
           lampac_screen_hide_extra_buttons: 'off',
           lampac_screen_smart_order: 'on',
-          lampac_screen_mobile_buttons_view: 'row',
           lampac_screen_title_logo: 'show',
           lampac_screen_logo_size: 'small',
           lampac_screen_logo_us: 'show',
@@ -1255,7 +1330,6 @@
           lampac_screen_tagline: 'show',
           lampac_screen_descr: 'show',
           lampac_screen_overlay_opacity: '86',
-          lampac_screen_auto_contrast: 'off',
           lampac_screen_buttons_folder: 'off',
           lampac_screen_cinema_descr_size: 'medium',
           lampac_card_style: 'default',
@@ -1277,16 +1351,14 @@
           lampac_theme_day: 'appletv',
           lampac_theme_night: 'appletv',
           lampac_screen_layout: 'cinematic',
-          lampac_screen_mobile_layout: 'poster',
+          lampac_screen_mobile_style: 'interface1',
           lampac_screen_compact_mode: 'normal',
           lampac_screen_compact_meta: 'off',
           lampac_screen_button_size: 'normal',
           lampac_screen_button_size_desktop: 'normal',
-          lampac_screen_button_size_mobile: 'large',
           lampac_screen_button_order: 'online,torrent,trailer,book',
           lampac_screen_hide_extra_buttons: 'off',
           lampac_screen_smart_order: 'on',
-          lampac_screen_mobile_buttons_view: 'row',
           lampac_screen_title_logo: 'show',
           lampac_screen_logo_size: 'medium',
           lampac_screen_logo_us: 'show',
@@ -1299,7 +1371,6 @@
           lampac_screen_tagline: 'show',
           lampac_screen_descr: 'show',
           lampac_screen_overlay_opacity: '94',
-          lampac_screen_auto_contrast: 'on',
           lampac_screen_buttons_folder: 'off',
           lampac_screen_cinema_descr_size: 'medium',
           lampac_card_style: 'default',
@@ -1320,16 +1391,14 @@
           lampac_theme_day: 'classic',
           lampac_theme_night: 'classic',
           lampac_screen_layout: 'cinematic',
-          lampac_screen_mobile_layout: 'poster',
+          lampac_screen_mobile_style: 'interface1',
           lampac_screen_compact_mode: 'compact',
           lampac_screen_compact_meta: 'off',
           lampac_screen_button_size: 'normal',
           lampac_screen_button_size_desktop: 'normal',
-          lampac_screen_button_size_mobile: 'normal',
           lampac_screen_button_order: 'online,torrent,trailer,book',
           lampac_screen_hide_extra_buttons: 'off',
           lampac_screen_smart_order: 'on',
-          lampac_screen_mobile_buttons_view: 'row',
           lampac_screen_title_logo: 'show',
           lampac_screen_logo_size: 'medium',
           lampac_screen_logo_us: 'hide',
@@ -1342,7 +1411,6 @@
           lampac_screen_tagline: 'hide',
           lampac_screen_descr: 'show',
           lampac_screen_overlay_opacity: '82',
-          lampac_screen_auto_contrast: 'off',
           lampac_screen_buttons_folder: 'off',
           lampac_screen_cinema_descr_size: 'medium',
           lampac_card_style: 'clean',
@@ -1362,7 +1430,21 @@
       }
       Lampa.Storage.set('lampac_interface_scene', scene);
       if (!map) return;
-      Object.keys(map).forEach(function (k) { Lampa.Storage.set(k, map[k]); });
+      if (deviceType === 'mobile') {
+        [
+          'lampac_screen_button_size',
+          'lampac_screen_button_size_desktop',
+          'lampac_screen_button_order',
+          'lampac_screen_hide_extra_buttons',
+          'lampac_screen_smart_order',
+          'lampac_screen_buttons_folder'
+        ].forEach(function (k) {
+          if (Object.prototype.hasOwnProperty.call(map, k)) Lampa.Storage.set(k, map[k]);
+        });
+      } else {
+        Object.keys(map).forEach(function (k) { Lampa.Storage.set(k, map[k]); });
+      }
+      registerInterface1MobileTemplate();
       applyTheme(Lampa.Storage.get(STORAGE_KEY, 'classic'));
       applyCardDisplay();
       applyScreenStyle();
@@ -1421,16 +1503,14 @@
             'lampac_theme_day',
             'lampac_theme_night',
             'lampac_screen_layout',
-            'lampac_screen_mobile_layout',
+            'lampac_screen_mobile_style',
             'lampac_screen_compact_mode',
             'lampac_screen_compact_meta',
             'lampac_screen_button_size_desktop',
-            'lampac_screen_button_size_mobile',
             'lampac_screen_button_size',
             'lampac_screen_button_order',
             'lampac_screen_hide_extra_buttons',
             'lampac_screen_smart_order',
-            'lampac_screen_mobile_buttons_view',
             'lampac_screen_title_logo',
             'lampac_screen_logo_size',
             'lampac_screen_logo_us',
@@ -1443,7 +1523,6 @@
             'lampac_screen_tagline',
             'lampac_screen_descr',
             'lampac_screen_overlay_opacity',
-            'lampac_screen_auto_contrast',
             'lampac_screen_buttons_folder',
             'lampac_card_style',
             'lampac_card_density',
@@ -1526,7 +1605,7 @@
     Lampa.SettingsApi.addParam({
       component: 'theme',
       param: { name: 'lampac_open_scene_appearance', type: 'button' },
-      field: { name: 'Оформление', description: 'Тема, профили, расписание, мобильный фон и кастомная тема' },
+      field: { name: 'Оформление', description: 'Тема, профили, расписание и кастомная тема' },
       onChange: function () { openSceneSection('theme_scene_appearance'); },
     });
 
@@ -1569,13 +1648,6 @@
       param: { name: 'lampac_open_theme_schedule', type: 'button' },
       field: { name: 'Профили и расписание', description: 'Профиль темы, авто-тема, день и ночь' },
       onChange: function () { openThemeSection('theme_schedule'); },
-    });
-
-    Lampa.SettingsApi.addParam({
-      component: 'theme_scene_appearance',
-      param: { name: 'lampac_open_theme_mobile', type: 'button' },
-      field: { name: 'Мобильный фон', description: 'Фон мобильного экрана и его поведение' },
-      onChange: function () { openThemeSection('theme_mobile'); },
     });
 
     Lampa.SettingsApi.addParam({
@@ -1643,11 +1715,13 @@
         document.head.appendChild(__alcopac_full_stage_style);
       }
     } catch (e) {}
-
-    if (!Lampa.Storage.get('lampac_screen_mobile_bg', '')) {
-          Lampa.Storage.set('lampac_screen_mobile_bg', value === 'classic' ? 'poster' : 'black');
+        if (getDeviceType() === 'mobile') {
+          applyMobileThemeButtonsOnly(value);
+          return;
         }
         applyTheme(value);
+        applyMobileButtonTheme(value);
+        registerInterface1MobileTemplate();
         applyScreenStyle();
       },
     });
@@ -2196,7 +2270,6 @@
     (function ensureSplitButtonSizeDefaults(){
       var legacy = Lampa.Storage.get('lampac_screen_button_size', 'normal');
       if (!Lampa.Storage.get('lampac_screen_button_size_desktop')) Lampa.Storage.set('lampac_screen_button_size_desktop', legacy);
-      if (!Lampa.Storage.get('lampac_screen_button_size_mobile')) Lampa.Storage.set('lampac_screen_button_size_mobile', legacy);
     })();
 
     function applyScreenStyle() {
@@ -2205,6 +2278,7 @@
 
       var rules = [];
       var layout = Lampa.Storage.get('lampac_screen_layout', 'default');
+      var mobileStyle = Lampa.Storage.get('lampac_screen_mobile_style', 'interface1');
       var anim = Lampa.Storage.get('lampac_screen_anim', 'cascade');
       var showRatings = Lampa.Storage.get('lampac_screen_ratings', 'show');
       var showReactions = 'show';
@@ -2219,41 +2293,18 @@
       var logoAllowUS = Lampa.Storage.get('lampac_screen_logo_us', 'show');
       var logoSize = Lampa.Storage.get('lampac_screen_logo_size', 'medium');
       var logoDesktopSizeMap = { xs: '4.8em', small: '6.0em', medium: '7.2em', large: '8.8em', xl: '10.8em' };
-      var logoMobileSizeMap = { xs: '3.2em', small: '4.0em', medium: '4.8em', large: '5.8em', xl: '7.0em' };
       var logoTvSizeMap = { xs: '5.6em', small: '7.0em', medium: '8.6em', large: '10.4em', xl: '12.6em' };
       var logoMaxHeight = logoDesktopSizeMap[logoSize] || logoDesktopSizeMap.medium;
-      var logoMobileMaxHeight = logoMobileSizeMap[logoSize] || logoMobileSizeMap.medium;
       var logoTvMaxHeight = logoTvSizeMap[logoSize] || logoTvSizeMap.medium;
-      var mobileMode = Lampa.Storage.get('lampac_screen_mobile_layout', 'poster');
-      var deviceTypeForButtons = getDeviceType();
       var legacyButtonSize = Lampa.Storage.get('lampac_screen_button_size', 'normal');
-      var buttonSizeMode = deviceTypeForButtons === 'mobile'
-        ? Lampa.Storage.get('lampac_screen_button_size_mobile', legacyButtonSize)
-        : Lampa.Storage.get('lampac_screen_button_size_desktop', legacyButtonSize);
+      var buttonSizeMode = Lampa.Storage.get('lampac_screen_button_size_desktop', legacyButtonSize);
       var compactScreen = Lampa.Storage.get('lampac_screen_compact_mode', 'normal');
       var compactMeta = Lampa.Storage.get('lampac_screen_compact_meta', 'off');
       var tvMode = Lampa.Storage.get('lampac_screen_tv_mode', 'off');
       var bgDim = Lampa.Storage.get('lampac_screen_bg_dim', 'none');
       var overlayOpacity = parseInt(Lampa.Storage.get('lampac_screen_overlay_opacity', '88'), 10);
-      var mobileButtonsView = Lampa.Storage.get('lampac_screen_mobile_buttons_view', 'row');
-      var autoContrast = Lampa.Storage.get('lampac_screen_auto_contrast', 'on');
       var deviceProfiles = Lampa.Storage.get('lampac_screen_device_profiles', 'off');
       var cardPreset = Lampa.Storage.get('lampac_screen_card_preset', 'default');
-      var activeTheme = Lampa.Storage.get(STORAGE_KEY, 'classic');
-      var storedMobileBg = Lampa.Storage.get('lampac_screen_mobile_bg', '');
-      var mobileBgKey = storedMobileBg || (activeTheme === 'classic' ? 'poster' : 'black');
-      var mobileBgMap = {
-        black: '#000000',
-        graphite: '#121418',
-        navy: '#0b1420',
-        brown: '#231a16',
-        olive: '#1b231c',
-        plum: '#211827'
-      };
-      var mobileBgColor = mobileBgKey === 'poster'
-        ? 'var(--lampac-mobile-poster-bg, #18222c)'
-        : (mobileBgMap[mobileBgKey] || '#000000');
-      var mobileBgRgb = 'var(--lampac-mobile-poster-rgb, 24,34,44)';
 
       if (deviceProfiles === 'on') {
         var deviceType = getDeviceType();
@@ -2261,11 +2312,9 @@
         if (profileName === 'compact') {
           compactScreen = 'compact';
           buttonSizeMode = 'compact';
-          if (deviceType === 'mobile') mobileMode = 'poster';
         } else if (profileName === 'cinema') {
           layout = 'cinematic';
           bgDim = 'medium';
-          if (deviceType === 'mobile') mobileMode = 'bottom';
         } else if (profileName === 'kids') {
           buttonSizeMode = 'xl';
           compactScreen = 'normal';
@@ -2476,6 +2525,19 @@
       // Optionally hide play button if user wants it removed
       rules.push('.full-start__button.selector.button--play.hide, .full-start__button.button--play.hide, .button--play.hide { display: none !important; visibility: hidden !important; opacity: 0 !important; pointer-events: none !important; width: 0 !important; min-width: 0 !important; max-width: 0 !important; padding: 0 !important; margin: 0 !important; border: 0 !important; overflow: hidden !important; }');
       rules.push('body.lampac-poster-fs-open { overflow: hidden !important; }');
+      rules.push('.lampac-mobile-poster-overlay {' +
+        ' position: fixed; inset: 0; z-index: 99999; display: flex; align-items: center; justify-content: center;' +
+        ' padding: 0; opacity: 0; pointer-events: none; background: rgba(8,10,14,0);' +
+        ' transition: opacity .34s ease, background .34s ease; }');
+      rules.push('.lampac-mobile-poster-overlay.is-open {' +
+        ' opacity: 1; pointer-events: auto; background: rgba(8,10,14,.94); }');
+      rules.push('.lampac-mobile-poster-overlay__img {' +
+        ' width: min(92vw, 34em); max-width: 92vw; height: auto; max-height: 92vh; object-fit: contain; display: block; opacity: 0;' +
+        ' transform: scale(.965) translateY(1.2em); transform-origin: center center;' +
+        ' transition: transform .38s cubic-bezier(.22,.8,.2,1), opacity .3s ease;' +
+        ' border-radius: 1.1em; box-shadow: 0 16px 50px rgba(0,0,0,.45); }');
+      rules.push('.lampac-mobile-poster-overlay.is-open .lampac-mobile-poster-overlay__img {' +
+        ' opacity: 1; transform: scale(1) translateY(0); }');
       // Title logo (if enabled)
       if (showTitleLogo === 'show') {
         rules.push('.full-start-new__logo {' +
@@ -2585,155 +2647,123 @@
         rules.push('.full-start-new__title { font-size: 3.3em !important; }');
       }
 
-      // Mobile layout
-      if (mobileMode === 'bottom') {
-        rules.push('@media (max-width: 600px) {' +
-          '  .full-start-new { min-height: 100vh !important; }' +
-          '  .full-start-new::before, .full-start-new::after { display: none !important; }' +
-          '  .full-start__background, .full-start__background.loaded {' +
-          '    opacity: 0.9 !important; filter: none !important; display: block !important;' +
-          '    position: fixed !important; inset: 0 !important; width: 100% !important; height: 100% !important; z-index: 0 !important;' +
-          '  }' +
-          '  .full-start-new__body {' +
-          '    min-height: 100vh !important; align-items: stretch !important;' +
-          '    padding: 0 !important; position: relative !important; z-index: 2 !important;' +
-          '    background: transparent !important;' +
-          '  }' +
-          '  .full-start-new__left { display: none !important; }' +
-          '  .full-start-new__right {' +
-          '    width: 100% !important; max-width: none !important; min-height: 100vh !important;' +
-          '    padding: 0.7em 1.1em 0.5em 1.1em !important; box-sizing: border-box !important;' +
-          '    display: flex !important; flex-direction: column !important; justify-content: flex-end !important;' +
-          '    position: relative !important;' +
-          '  }' +
-          '  .full-start-new__right > * { position: relative !important; z-index: 1 !important; }' +
-          '  .full-start-new__title { font-size: 2.1em !important; line-height: 1.05 !important; margin-top: 0 !important; }' +
-          '  .full-start-new__head,' +
-          '  .full-start-new__tagline,' +
-          '  .full-start-new__details,' +
-          '  .full-start-new__rate-line {' +
-          '    margin-top: 0.35em !important; }' +
-          '  .full-start-new__rate-line { gap: 0.4em !important; }' +
-          '  .full-start-new__buttons {' +
-          '    display: flex !important; flex-wrap: nowrap !important; gap: 0.5em !important;' +
-          '    overflow-x: auto !important; -webkit-overflow-scrolling: touch !important;' +
-          '    padding: 0 !important; margin: 0.35em 0 0 0 !important; min-height: 0 !important; height: auto !important;' +
-          '    align-items: center !important;' +
-          '  }' +
-          '  .full-start-new__buttons .full-start__button, .full-start-new__buttons .full-start-new__button, .full-start-new__buttons .selector, .full-start__buttons .full-start__button, .full-start__buttons .full-start-new__button, .full-start__buttons .selector {' +
-          '    flex: 0 0 auto !important; min-width: var(--lampac-btn-size-mobile, 3.15em) !important; height: var(--lampac-btn-size-mobile, 3.15em) !important;' +
-          '    border-radius: 0.9em !important; padding: 0 var(--lampac-btn-pad-mobile, 0.85em) !important;' +
-          '  }' +
-          '  .full-descr { display: block !important; }' +
-          '  .cinema-descr { display: none !important; }' +
+      if (mobileStyle === 'interface1') {
+        rules.push('@media screen and (max-width: 480px) {' +
+          ' .full-start-new, .full-start, .full-start-new__body {' +
+          ' min-height: 100vh !important; min-height: 100svh !important; height: 100vh !important; height: 100svh !important; width: 100% !important; max-width: 100% !important; margin-left: auto !important; margin-right: auto !important; background: transparent !important;' +
+          ' }' +
+          ' .scroll__body, .scroll__content, .activity.activity--active, .activity--active {' +
+          ' background: #1b1c1f !important; margin-left: auto !important; margin-right: auto !important;' +
+          ' }' +
+          ' .full-start-new__body {' +
+          ' display: flex !important; align-items: stretch !important; justify-content: center !important; min-height: 100svh !important; height: 100svh !important; padding: 0 !important; position: relative !important; left: 0 !important; right: 0 !important;' +
+          ' }' +
+          ' .full-start-new__left {' +
+          ' display: block !important; position: absolute !important; top: 0 !important; bottom: 0 !important; left: 50% !important; right: auto !important; transform: translateX(-50%) !important; width: 100% !important; max-width: 100% !important; min-height: 100svh !important; height: 100% !important; margin: 0 auto !important; z-index: 0 !important; pointer-events: none !important;' +
+          ' }' +
+          ' .full-start-new__poster {' +
+          ' width: 100% !important; max-width: 100% !important; min-height: 100svh !important; height: 100% !important; display: block !important; position: relative !important; margin-left: auto !important; margin-right: auto !important; z-index: 0 !important; border-radius: 0 !important; overflow: hidden !important;' +
+          ' }' +
+          ' .full-start-new__poster::before {' +
+          ' content: "" !important; position: absolute !important; left: 0 !important; right: 0 !important; bottom: -1px !important; height: 48vh !important; z-index: 2 !important; pointer-events: none !important;' +
+          ' background: linear-gradient(to bottom, rgba(14,16,19,0) 0%, rgba(14,16,19,0.08) 18%, rgba(14,16,19,0.24) 36%, rgba(18,19,21,0.52) 58%, rgba(24,25,28,0.82) 78%, #1b1c1f 100%) !important;' +
+          ' }' +
+          ' .full-start-new__img, .full--poster {' +
+          ' display: block !important; width: 100% !important; min-height: 100svh !important; height: 100% !important; object-fit: cover !important; opacity: 0.92 !important; filter: brightness(0.7) saturate(0.9) !important; position: relative !important; z-index: 0 !important;' +
+          ' }' +
+          ' .full-start-new__poster::after {' +
+          ' content: "" !important; position: absolute !important; inset: 0 !important; z-index: 1 !important;' +
+          ' background: linear-gradient(to bottom, rgba(10,12,14,0.08) 0%, rgba(10,12,14,0.12) 14%, rgba(10,12,14,0.2) 26%, rgba(10,12,14,0.34) 40%, rgba(18,19,21,0.5) 54%, rgba(23,24,27,0.7) 68%, rgba(27,28,31,0.88) 82%, #1b1c1f 100%) !important;' +
+          ' }' +
+          ' .full-start__background, .full-start__background.loaded, img.full-start__background {' +
+          ' display: none !important;' +
+          ' }' +
+          ' .full-start-new::before, .full-start-new::after {' +
+          ' display: none !important;' +
+          ' }' +
+          ' .full-start-new__head, .full-start-new__title, .full-start__rate, .full-start-new__reactions, .full-start-new__rate-line, .full-start-new__buttons, .full-start-new__details, .full-start-new__tagline {' +
+          ' justify-content: center !important; text-align: center !important; max-width: 100% !important;' +
+          ' }' +
+          ' .full-start-new__right {' +
+          ' position: relative !important; z-index: 10 !important; isolation: isolate !important;' +
+          ' width: 100% !important; max-width: 100% !important; min-height: 100vh !important; min-height: 100svh !important; height: 100vh !important; height: 100svh !important;' +
+          ' display: flex !important; flex-direction: column !important; justify-content: flex-end !important; align-items: center !important;' +
+          ' left: 50% !important; transform: translateX(-50%) !important; padding: 0 1.4em 8.8em 1.4em !important; box-sizing: border-box !important; margin-left: 0 !important; margin-right: 0 !important;' +
+          ' background: transparent !important;' +
+          ' row-gap: 0.18em !important;' +
+          ' }' +
+          ' .full-start-new__right::before {' +
+          ' content: "" !important; position: absolute !important; inset: 0 !important; z-index: 1 !important; pointer-events: none !important;' +
+          ' background: linear-gradient(to bottom, rgba(18,19,21,0) 0%, rgba(18,19,21,0.04) 26%, rgba(18,19,21,0.1) 40%, rgba(18,19,21,0.2) 52%, rgba(18,19,21,0.38) 64%, rgba(18,19,21,0.62) 76%, rgba(27,28,31,0.86) 88%, #1b1c1f 100%) !important;' +
+          ' }' +
+          ' .full-start-new__right > * {' +
+          ' position: relative !important; z-index: 2 !important; margin-left: auto !important; margin-right: auto !important;' +
+          ' }' +
+          ' .full-start-new__head, .full-start-new__logo, .full-start-new__title, .full-start-new__tagline, .full-start-new__details, .full-start-new__buttons {' +
+          ' width: min(100%, 22em) !important; max-width: 22em !important; margin-left: auto !important; margin-right: auto !important;' +
+          ' }' +
+          ' .full-start-new__rate-line, .full-start-new__reactions {' +
+          ' width: min(100%, 24.6em) !important; max-width: 24.6em !important; margin-left: auto !important; margin-right: auto !important; flex: none !important;' +
+          ' }' +
+          ' .full-start-new__reactions {' +
+          ' width: min(100%, 31em) !important; max-width: 31em !important;' +
+          ' }' +
+          ' .full-start-new__rate-line {' +
+          ' display: inline-flex !important; flex-wrap: wrap !important; align-items: center !important; justify-content: center !important; gap: 0.42em !important;' +
+          ' }' +
+          ' .full-start-new__reactions {' +
+          ' display: inline-flex !important; flex-wrap: nowrap !important; align-items: center !important; justify-content: center !important; gap: 0.42em !important; overflow-x: auto !important; overflow-y: hidden !important; white-space: nowrap !important;' +
+          ' }' +
+          ' .full-start-new__title {' +
+          ' font-size: 2.05em !important; line-height: 1.08 !important; margin: 0.18em 0 0 0 !important;' +
+          ' }' +
+          ' .full-start-new__logo {' +
+          ' display: flex !important; justify-content: center !important; align-items: center !important; width: 100% !important; margin: 0 0 0.75em 0 !important; min-height: 0 !important;' +
+          ' }' +
+          ' .full-start-new__logo img {' +
+          ' display: block !important; width: auto !important; max-width: min(100%, 38em) !important; max-height: 13.2em !important; object-fit: contain !important; margin: 0 auto !important;' +
+          ' }' +
+          ' .full-start-new.alcopac-full-has-logo .full-start-new__title {' +
+          ' display: none !important;' +
+          ' }' +
+          ' .full-start__title-original {' +
+          ' display: none !important;' +
+          ' }' +
+          ' .full-start-new__tagline {' +
+          ' margin-top: 0.75em !important;' +
+          ' }' +
+          ' .full-start-new__head, .full-start-new__details, .full-start-new__rate-line, .full-start-new__reactions {' +
+          ' margin-top: 0.32em !important; margin-bottom: 0 !important;' +
+          ' }' +
+          ' .full-start-new__buttons {' +
+          ' margin-top: 0.85em !important; padding-bottom: 0.4em !important;' +
+          ' display: grid !important; grid-template-columns: repeat(5, minmax(0, 1fr)) !important; gap: 0.55em !important;' +
+          ' width: min(100%, 22.8em) !important; max-width: 22.8em !important; overflow: visible !important; justify-items: center !important; align-items: stretch !important; justify-content: center !important; margin-left: auto !important; margin-right: auto !important;' +
+          ' }' +
+          ' .full-start-new__buttons .full-start__button, .full-start-new__buttons .full-start-new__button, .full-start-new__buttons .selector, .full-start__buttons .full-start__button, .full-start__buttons .full-start-new__button, .full-start__buttons .selector {' +
+          ' width: 100% !important; min-width: 0 !important; height: 3.35em !important; padding: 0.35em !important; border-radius: 0.95em !important;' +
+          ' display: inline-flex !important; justify-content: center !important; align-items: center !important;' +
+          ' }' +
+          ' .full-start-new__buttons .full-start__button > span, .full-start-new__buttons .full-start-new__button > span, .full-start__buttons .full-start__button > span, .full-start__buttons .full-start-new__button > span {' +
+          ' display: none !important;' +
+          ' }' +
+          ' .full-descr, .full-descr__text, .items-line, .items-line__body {' +
+          ' background: transparent !important;' +
+          ' }' +
+          ' .full-descr {' +
+          ' margin-top: 0 !important; padding-top: 0.4em !important;' +
+          ' }' +
           '}');
-      } else {
-        rules.push('@media (max-width: 600px) {' +
-          '  .full-start-new {' +
-            '    min-height: auto !important; height: auto !important;' +
-            '    background: ' + mobileBgColor + ' !important;' +
-          '  }' +
-          '  .full-start, .scroll__body, .scroll__content { background: ' + mobileBgColor + ' !important; }' +
-          '  .head__body { background: ' + (mobileBgKey === 'poster' ? ('rgba(' + mobileBgRgb + ', 0.88)') : 'rgba(14,16,22,0.9)') + ' !important; backdrop-filter: blur(12px) !important; -webkit-backdrop-filter: blur(12px) !important; }' +
-          '  .full-start-new::before, .full-start-new::after { display: none !important; }' +
-          '  .full-start-new__left, .full-start__poster, .full-start__img, .full-start-new__img { display: none !important; }' +
-          '  .full-start__background, .full-start__background.loaded, img.full-start__background { display: none !important; }' +
-          '  .full-start-new__body {' +
-            '    min-height: auto !important; height: auto !important; padding: 0 !important; position: relative !important;' +
-            '    display: flex !important; flex-direction: column !important; background: ' + mobileBgColor + ' !important;' +
-          '  }' +
-          '  .full-start-new__body::after {' +
-            '    content: ""; position: absolute; left: 0; right: 0; top: 50%; bottom: 0; pointer-events: none; z-index: 1;' +
-          '    background: ' + (mobileBgKey === 'poster' ? ('linear-gradient(to bottom, rgba(' + mobileBgRgb + ',0) 0%, rgba(' + mobileBgRgb + ',0.62) 30%, rgba(' + mobileBgRgb + ',0.96) 100%)') : 'linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,.62) 30%, rgba(0,0,0,.95) 100%)') + ';' +
-            '    backdrop-filter: blur(12px) !important; -webkit-backdrop-filter: blur(12px) !important;' +
-          '  }' +
-          '  .lampac-mobile-poster-card {' +
-            '    width: calc(100% - 1.2em) !important; margin: 0.35em 0.6em 0 !important;' +
-            '    aspect-ratio: 2 / 3 !important; border-radius: 1.35em !important; overflow: hidden !important;' +
-            '    position: relative !important; box-shadow: 0 16px 40px rgba(0,0,0,.38) !important;' +
-            '    background: rgba(255,255,255,.03) !important; flex: 0 0 auto !important;' +
-            '    z-index: 2 !important;' +
-          '  }' +
-          '  .lampac-mobile-poster-card img {' +
-            '    width: 100% !important; height: 100% !important; object-fit: cover !important; display: block !important;' +
-            '    -webkit-mask-image: -webkit-linear-gradient(top, #fff 40%, rgba(255,255,255,0) 100%);' +
-            '    -webkit-mask-image: linear-gradient(to bottom, #fff 40%, rgba(255,255,255,0) 100%);' +
-            '    mask-image: linear-gradient(to bottom, #fff 40%, rgba(255,255,255,0) 100%);' +
-          '  }' +
-          '  .lampac-mobile-poster-card::before {' +
-          '    content: ""; position: absolute; left: 0; right: 0; bottom: -2px; height: 46%; pointer-events: none;' +
-          '    background: linear-gradient(to top, rgba(0,0,0,.94) 0%, rgba(0,0,0,.52) 58%, rgba(0,0,0,0) 100%);' +
-          '    filter: blur(14px); z-index: 1;' +
-          '  }' +
-          '  .lampac-mobile-poster-card::after {' +
-            '    content: ""; position: absolute; inset: 0; pointer-events: none;' +
-          '    background: linear-gradient(to bottom, rgba(7,10,12,0) 34%, rgba(7,10,12,.42) 62%, rgba(7,10,12,.9) 100%);' +
-          '    box-shadow: inset 0 -45px 60px rgba(0,0,0,.55); z-index: 2;' +
-          '  }' +
-          '  .full-start-new__right {' +
-            '    width: 100% !important; max-width: none !important; box-sizing: border-box !important;' +
-            '    display: flex !important; flex-direction: column !important; justify-content: flex-start !important;' +
-            '    row-gap: 0.22em !important; align-items: center !important; text-align: center !important;' +
-            '    width: calc(100% - 1.2em) !important; margin: -27vh 0.6em 0 !important;' +
-            '    padding: 0.65em 0.82em 0.72em 0.82em !important;' +
-            '    border-radius: 1em !important;' +
-            '    background: ' + (mobileBgKey === 'poster' ? ('linear-gradient(to bottom, rgba(' + mobileBgRgb + ',0.52), rgba(' + mobileBgRgb + ',0.82))') : 'linear-gradient(to bottom, rgba(0,0,0,.52), rgba(0,0,0,.78))') + ' !important;' +
-            '    backdrop-filter: blur(10px) !important; -webkit-backdrop-filter: blur(10px) !important;' +
-            '    z-index: 3 !important;' +
-          '  }' +
-          '  .full-start-new__right.lampac-mobile-right-on-poster {' +
-            '    position: relative !important; left: auto !important; right: auto !important; bottom: auto !important;' +
-            '    width: calc(100% - 1.2em) !important; padding: 0.85em 0.9em 0.85em 0.9em !important;' +
-            '    border-radius: 1em !important;' +
-            '    background: ' + (mobileBgKey === 'poster' ? ('linear-gradient(to bottom, rgba(' + mobileBgRgb + ',0.52), rgba(' + mobileBgRgb + ',0.82))') : 'linear-gradient(to bottom, rgba(0,0,0,.52), rgba(0,0,0,.78))') + ' !important;' +
-            '    z-index: 3 !important;' +
-          '  }' +
-          '  .full-start-new__right .full-start-new__logo { margin: 0 auto 0.12em auto !important; min-height: 0 !important; }' +
-          '  .full-start-new__right .full-start-new__logo img { height: ' + logoMobileMaxHeight + ' !important; max-height: none !important; max-width: min(100%, 20em) !important; }' +
-          '  .full-start-new__right .full-start-new__title { margin: 0 auto 0.12em auto !important; }' +
-          '  .full-start-new__right .full-start-new__buttons { justify-content: center !important; }' +
-          '  .full-start-new__title { font-size: 2.1em !important; line-height: 1.06 !important; margin: 0 !important; }' +
-          '  .full-start-new__head, .full-start-new__tagline, .full-start-new__details, .full-start-new__rate-line {' +
-            '    margin-top: 0 !important; margin-bottom: 0 !important; line-height: 1.25 !important; }' +
-          '  .full-start-new__buttons {' +
-            '    display: flex !important; flex-wrap: nowrap !important; gap: 0.5em !important;' +
-            '    overflow-x: auto !important; -webkit-overflow-scrolling: touch !important;' +
-            '    padding: 0 !important; margin: 0.2em 0 0.12em 0 !important; min-height: 0 !important; height: auto !important;' +
-          '  }' +
-          '  .full-start-new__buttons .full-start__button, .full-start-new__buttons .full-start-new__button, .full-start-new__buttons .selector, .full-start__buttons .full-start__button, .full-start__buttons .full-start-new__button, .full-start__buttons .selector {' +
-          '    flex: 0 0 auto !important; min-width: var(--lampac-btn-size-mobile, 3.15em) !important; height: var(--lampac-btn-size-mobile, 3.15em) !important;' +
-          '    border-radius: 0.88em !important; padding: 0 var(--lampac-btn-pad-mobile, 0.85em) !important;' +
-          '  }' +
-          '  .full-descr { display: block !important; margin-top: -0.55em !important; padding-top: 0 !important; max-width: 100% !important; }' +
-          '  .full-descr, .items-line { position: relative !important; z-index: 2 !important; }' +
-          '  .cinema-descr { display: none !important; }' +
-          '  .scroll__body > .items-line.layer--visible.layer--render:first-of-type {' +
-          '    margin-top: -0.15em !important;' +
-          '  }' +
-          '  .scroll__body > .items-line.layer--visible.layer--render:first-of-type .items-line__head {' +
-          '    margin-top: 0 !important; margin-bottom: 0.25em !important;' +
-          '  }' +
+        rules.push('@media screen and (min-width: 581px) { .full-start-new__left { width: 21em !important; } }');
+        rules.push('@media screen and (max-width: 480px) {' +
+          ' .full-start-new__rate-line .full-start__pg, .full-start__pg, .full-start__status { font-size: 1em !important; background: #fff !important; color: #000 !important; }' +
+          ' .full-start__rate { border-radius: 0.25em !important; padding: 0.3em !important; background-color: rgba(0, 0, 0, 0.3) !important; }' +
           '}');
+        rules.push('@media screen and (max-width: 580px) { .full-start-new__buttons, .full-start__buttons { overflow: visible !important; } }');
+        rules.push('.full-start__background.loaded { opacity: 0.85; }');
+        rules.push('.full-start__background.dim { opacity: 0.2; }');
       }
-      if (mobileButtonsView === 'grid') {
-        rules.push('@media (max-width: 600px) {' +
-          '  .full-start-new__buttons {' +
-          '    display: grid !important; grid-template-columns: repeat(4, minmax(0, 1fr)) !important;' +
-          '    gap: 0.45em !important; overflow: visible !important;' +
-          '  }' +
-          '  .full-start-new__buttons .full-start__button, .full-start-new__buttons .full-start-new__button, .full-start-new__buttons .selector, .full-start__buttons .full-start__button, .full-start__buttons .full-start-new__button, .full-start__buttons .selector {' +
-          '    width: 100% !important; min-width: 0 !important;' +
-          '  }' +
-          '}');
-      }
-      if (autoContrast === 'on') {
-        rules.push('.full-start-new.lampac-contrast-strong .full-start-new__title,' +
-          '.full-start-new.lampac-contrast-strong .full-start-new__head,' +
-          '.full-start-new.lampac-contrast-strong .full-start-new__tagline,' +
-          '.full-start-new.lampac-contrast-strong .full-start-new__details {' +
-          '  text-shadow: 0 2px 14px rgba(0,0,0,.9) !important;' +
-          '}');
-      }
+
       rules.push('.full-start-new__buttons { margin-top: 0.45em !important; }');
 
       if (rules.length) {
@@ -2745,11 +2775,6 @@
       }
 
       try { setTimeout(window.updateReactionCountsVisibility, 0); setTimeout(window.updateReactionCountsVisibility, 180); } catch (e) {}
-
-      if (mobileMode !== 'poster') {
-        restoreMobileInfoBlock();
-        cleanupMobilePosterCard();
-      }
     }
 
 
@@ -3045,7 +3070,7 @@
     Lampa.SettingsApi.addParam({
       component: 'theme_screen',
       param: { name: 'lampac_open_screen_profiles', type: 'button' },
-      field: { name: 'Профили', description: 'Раздельные профили mobile/desktop/tv' },
+      field: { name: 'Профили', description: 'Раздельные профили desktop/tv' },
       onChange: function () { openScreenSection('theme_screen_profiles'); },
     });
 
@@ -3067,16 +3092,19 @@
     Lampa.SettingsApi.addParam({
       component: 'theme_screen_layout',
       param: {
-        name: 'lampac_screen_mobile_layout',
+        name: 'lampac_screen_mobile_style',
         type: 'select',
-        values: { poster: 'Постер + инфо', bottom: 'Кинематограф (низ)' },
-        default: 'poster',
+        values: { interface1: 'Из interface1', off: 'Выключить' },
+        default: 'interface1',
       },
       field: {
-        name: 'Мобильный режим',
-        description: 'Постер + инфо: аккуратный вертикальный постер. Кинематограф: контент поверх фона внизу.',
+        name: 'Мобильная версия',
+        description: 'Перенесенный mobile-слой из interface1.js для экрана фильма',
       },
-      onChange: applyScreenStyle,
+      onChange: function () {
+        registerInterface1MobileTemplate();
+        applyScreenStyle();
+      },
     });
 
     Lampa.SettingsApi.addParam({
@@ -3157,21 +3185,6 @@
     Lampa.SettingsApi.addParam({
       component: 'theme_screen_buttons',
       param: {
-        name: 'lampac_screen_button_size_mobile',
-        type: 'select',
-        values: { compact: 'Компактные', normal: 'Обычные', large: 'Крупные', xl: 'Очень крупные' },
-        default: 'normal',
-      },
-      field: {
-        name: 'Размер кнопок (Mobile)',
-        description: 'Размер кнопок действий на экране фильма для телефона и мобильного режима',
-      },
-      onChange: applyScreenStyle,
-    });
-
-    Lampa.SettingsApi.addParam({
-      component: 'theme_screen_buttons',
-      param: {
         name: 'lampac_screen_hide_extra_buttons',
         type: 'select',
         values: { off: 'Выключить', on: 'Включить' },
@@ -3246,21 +3259,6 @@
       },
     });
 
-    Lampa.SettingsApi.addParam({
-      component: 'theme_screen_buttons',
-      param: {
-        name: 'lampac_screen_mobile_buttons_view',
-        type: 'select',
-        values: { row: 'Ряд', grid: 'Сетка 2x2' },
-        default: 'row',
-      },
-      field: {
-        name: 'Мобильные кнопки',
-        description: 'Режим отображения: горизонтальный ряд или сетка',
-      },
-      onChange: applyScreenStyle,
-    });
-
 
     Lampa.SettingsApi.addParam({
       component: 'theme_screen_visual',
@@ -3272,22 +3270,7 @@
       },
       field: {
         name: 'Прозрачность оверлея',
-        description: 'Нижняя черная панель на постере в мобильной версии',
-      },
-      onChange: applyScreenStyle,
-    });
-
-    Lampa.SettingsApi.addParam({
-      component: 'theme_screen_visual',
-      param: {
-        name: 'lampac_screen_auto_contrast',
-        type: 'select',
-        values: { on: 'Включить', off: 'Выключить' },
-        default: 'on',
-      },
-      field: {
-        name: 'Автоконтраст текста',
-        description: 'Усиливает читаемость текста на светлых постерах',
+        description: 'Интенсивность затемняющего оверлея на экране фильма',
       },
       onChange: applyScreenStyle,
     });
@@ -3380,26 +3363,6 @@
     });
 
     Lampa.SettingsApi.addParam({
-      component: 'theme_mobile',
-      param: {
-        name: 'lampac_screen_mobile_bg',
-        type: 'select',
-        values: {
-          poster: 'Под цвет постера',
-          black: 'Черный',
-          graphite: 'Графит',
-          navy: 'Темно-синий',
-          brown: 'Темно-коричневый',
-          olive: 'Оливковый',
-          plum: 'Темно-сливовый'
-        },
-        default: 'poster',
-      },
-      field: { name: 'Фон мобильного экрана', description: 'Фон мобильной карточки. Для классической темы по умолчанию используется цвет постера' },
-      onChange: applyScreenStyle,
-    });
-
-    Lampa.SettingsApi.addParam({
       component: 'theme_screen_visual',
       param: {
         name: 'lampac_screen_watch_progress',
@@ -3408,18 +3371,6 @@
         default: 'on',
       },
       field: { name: 'Прогресс просмотра', description: 'Показывать полосу досмотра в карточке' },
-      onChange: applyScreenStyle,
-    });
-
-    Lampa.SettingsApi.addParam({
-      component: 'theme_screen_profiles',
-      param: {
-        name: 'lampac_screen_profile_mobile',
-        type: 'select',
-        values: { normal: 'Обычный', compact: 'Компактный', cinema: 'Кинематограф', kids: 'Детский' },
-        default: 'normal',
-      },
-      field: { name: 'Профиль Mobile', description: 'Набор настроек для телефона' },
       onChange: applyScreenStyle,
     });
 
@@ -3648,6 +3599,7 @@
         logoContainer.setAttribute('data-card', cardId);
         logoContainer.classList.remove('loaded');
         logoContainer.innerHTML = '';
+        root.classList.remove('alcopac-full-has-logo');
         showTitle();
       }
 
@@ -3655,6 +3607,7 @@
         logoContainer.removeAttribute('data-card');
         logoContainer.classList.remove('loaded');
         logoContainer.innerHTML = '';
+        root.classList.remove('alcopac-full-has-logo');
         showTitle();
       }
 
@@ -3662,6 +3615,7 @@
         logoContainer.setAttribute('data-card', cardId);
         logoContainer.innerHTML = '<img src="' + url + '" class="loaded" />';
         logoContainer.classList.add('loaded');
+        root.classList.add('alcopac-full-has-logo');
         hideTitle();
       }
 
@@ -3674,6 +3628,13 @@
         if (logoContainer.querySelector('img')) hideTitle();
         else showTitle();
         return;
+      }
+
+      var directLogo = card.logo || card.logo_path || card.image_logo || card.title_logo || '';
+      if (directLogo) {
+        if (/^https?:\/\//i.test(directLogo)) setLogo(directLogo);
+        else if (directLogo.charAt && directLogo.charAt(0) === '/' && window.Lampa && Lampa.TMDB && Lampa.TMDB.image) setLogo(Lampa.TMDB.image('original' + directLogo));
+        if (logoContainer.classList.contains('loaded')) return;
       }
 
       var logos = card.images && card.images.logos;
@@ -3753,226 +3714,6 @@
       });
     }
 
-    function cleanupMobilePosterCard() {
-      var root = getActiveFullRoot();
-      var cardEl = root && root.querySelector('.lampac-mobile-poster-card');
-      if (cardEl && cardEl.parentNode) cardEl.parentNode.removeChild(cardEl);
-    }
-
-    function restoreMobileInfoBlock() {
-      var root = getActiveFullRoot();
-      var anchor = root && root.querySelector('.lampac-mobile-right-anchor');
-      var right = root && root.querySelector('.full-start-new__right');
-      if (anchor && right && right.parentNode !== anchor.parentNode) {
-        anchor.parentNode.insertBefore(right, anchor.nextSibling);
-      }
-      if (right) right.classList.remove('lampac-mobile-right-on-poster');
-    }
-
-    function buildMobilePosterCandidates(card, root) {
-      var urls = [];
-      var path = card && (card.poster_path || card.backdrop_path);
-      var tmdb = window.Lampa && Lampa.TMDB && Lampa.TMDB.image;
-
-      function pushUnique(url) {
-        if (!url) return;
-        if (urls.indexOf(url) === -1) urls.push(url);
-      }
-
-      function normalizePath(p) {
-        if (!p) return '';
-        if (/^https?:\/\//i.test(p)) return p;
-        return p.charAt(0) === '/' ? p : ('/' + p);
-      }
-
-      var norm = normalizePath(path);
-      if (/^https?:\/\//i.test(norm)) {
-        pushUnique(norm);
-      } else if (norm && tmdb) {
-        // Different builds use different formats in Lampa.TMDB.image.
-        pushUnique(Lampa.TMDB.image('w780' + norm));
-        pushUnique(Lampa.TMDB.image('/t/p/w780' + norm));
-        pushUnique(Lampa.TMDB.image('original' + norm));
-        pushUnique(Lampa.TMDB.image('/t/p/original' + norm));
-      }
-
-      var domImg = root && (root.querySelector('img.full-start__background') || root.querySelector('.full-start-new__img') || root.querySelector('.full-start__img'));
-      if (domImg && domImg.src) pushUnique(domImg.src);
-
-      return urls;
-    }
-
-    function loadPosterWithFallback(img, urls, onFail) {
-      if (!img || !urls || !urls.length) {
-        if (onFail) onFail();
-        return;
-      }
-      var index = 0;
-      img.onerror = function () {
-        index++;
-        if (index >= urls.length) {
-          img.onerror = null;
-          if (onFail) onFail();
-          return;
-        }
-        img.src = urls[index];
-      };
-      img.src = urls[index];
-    }
-
-    function normalizeMobilePosterColor(rgb) {
-      if (!rgb || rgb.length < 3) return { rgb: '24,34,44', hex: '#18222c' };
-      var r = Math.max(0, Math.min(255, Math.round(rgb[0] * 0.72)));
-      var g = Math.max(0, Math.min(255, Math.round(rgb[1] * 0.72)));
-      var b = Math.max(0, Math.min(255, Math.round(rgb[2] * 0.78)));
-      var max = Math.max(r, g, b);
-      if (max < 46) {
-        var boost = 46 - max;
-        r = Math.min(255, r + boost);
-        g = Math.min(255, g + boost);
-        b = Math.min(255, b + boost);
-      }
-      var rgbStr = [r, g, b].join(',');
-      var hex = '#' + [r, g, b].map(function (n) {
-        var h = n.toString(16);
-        return h.length === 1 ? '0' + h : h;
-      }).join('');
-      return { rgb: rgbStr, hex: hex };
-    }
-
-    function setMobilePosterBgVars(color) {
-      var root = document.documentElement;
-      if (!root) return;
-      var value = color || { rgb: '24,34,44', hex: '#18222c' };
-      root.style.setProperty('--lampac-mobile-poster-rgb', value.rgb);
-      root.style.setProperty('--lampac-mobile-poster-bg', value.hex);
-    }
-
-    function applyPosterBackgroundFromImage(img) {
-      if (!img || !img.complete) {
-        setMobilePosterBgVars();
-        return;
-      }
-
-      try {
-        if ((Lampa.Storage.get('lampac_screen_mobile_bg', '') || (Lampa.Storage.get(STORAGE_KEY, 'classic') === 'classic' ? 'poster' : 'black')) === 'poster') {
-          applyPosterBackgroundFromImage(img);
-        }
-        var c = document.createElement('canvas');
-        c.width = 18;
-        c.height = 18;
-        var x = c.getContext('2d', { willReadFrequently: true });
-        x.drawImage(img, 0, 0, 18, 18);
-
-        var data = x.getImageData(0, 6, 18, 10).data;
-        var r = 0, g = 0, b = 0, count = 0;
-        for (var i = 0; i < data.length; i += 4) {
-          var alpha = data[i + 3];
-          if (alpha < 40) continue;
-          r += data[i];
-          g += data[i + 1];
-          b += data[i + 2];
-          count++;
-        }
-
-        if (!count) {
-          setMobilePosterBgVars();
-          return;
-        }
-
-        setMobilePosterBgVars(normalizeMobilePosterColor([r / count, g / count, b / count]));
-      } catch (e) {
-        setMobilePosterBgVars();
-      }
-    }
-
-    function renderMobilePosterCard() {
-      if (window.innerWidth > 600) return;
-      if (Lampa.Storage.get('lampac_screen_mobile_layout', 'poster') !== 'poster') {
-        restoreMobileInfoBlock();
-        cleanupMobilePosterCard();
-        setMobilePosterBgVars();
-        return;
-      }
-
-      var root = getActiveFullRoot();
-      var body = root && root.querySelector('.full-start-new__body');
-      var right = root && root.querySelector('.full-start-new__right');
-      if (!root || !body || !right) return;
-
-      var anchor = body.querySelector('.lampac-mobile-right-anchor');
-      if (!anchor) {
-        anchor = document.createElement('div');
-        anchor.className = 'lampac-mobile-right-anchor';
-        body.insertBefore(anchor, right);
-      }
-
-      var activity = Lampa.Activity.active();
-      var card = activity && activity.card;
-      var candidates = buildMobilePosterCandidates(card, root);
-      if (!candidates.length) return;
-
-      var posterCard = body.querySelector('.lampac-mobile-poster-card');
-      if (!posterCard) {
-        posterCard = document.createElement('div');
-        posterCard.className = 'lampac-mobile-poster-card';
-        posterCard.innerHTML = '<img alt="" />';
-        body.insertBefore(posterCard, anchor.nextSibling);
-      }
-
-      if (right.parentNode !== body) body.appendChild(right);
-      if (posterCard.nextSibling !== right) body.insertBefore(right, posterCard.nextSibling);
-      right.classList.remove('lampac-mobile-right-on-poster');
-
-      var img = posterCard.querySelector('img');
-      if (!img) return;
-
-      if (img.getAttribute('data-card') === String(card && card.id || '') && img.getAttribute('data-ok') === '1') return;
-      img.setAttribute('data-card', String(card && card.id || ''));
-      img.setAttribute('data-ok', '0');
-
-      img.onload = function () {
-        img.setAttribute('data-ok', '1');
-        posterCard.style.display = '';
-        applyPosterBackgroundFromImage(img);
-        applyAutoContrast();
-      };
-      loadPosterWithFallback(img, candidates, function () {
-        restoreMobileInfoBlock();
-        posterCard.style.display = 'none';
-        setMobilePosterBgVars();
-      });
-    }
-
-    function applyAutoContrast() {
-      if (Lampa.Storage.get('lampac_screen_auto_contrast', 'on') !== 'on') return;
-      var root = getActiveFullRoot();
-      if (!root) return;
-      var img = root.querySelector('.lampac-mobile-poster-card img') || root.querySelector('img.full-start__background');
-      if (!img || !img.complete) return;
-
-      try {
-        if ((Lampa.Storage.get('lampac_screen_mobile_bg', '') || (Lampa.Storage.get(STORAGE_KEY, 'classic') === 'classic' ? 'poster' : 'black')) === 'poster') {
-          applyPosterBackgroundFromImage(img);
-        }
-        var c = document.createElement('canvas');
-        c.width = 12;
-        c.height = 12;
-        var x = c.getContext('2d');
-        x.drawImage(img, 0, 0, 12, 12);
-        var data = x.getImageData(0, 0, 12, 12).data;
-        var sum = 0;
-        for (var i = 0; i < data.length; i += 4) {
-          sum += 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
-        }
-        var avg = sum / (data.length / 4);
-        if (avg > 150) root.classList.add('lampac-contrast-strong');
-        else root.classList.remove('lampac-contrast-strong');
-      } catch (e) {
-        root.classList.add('lampac-contrast-strong');
-      }
-    }
-
     function hideEmptyBlocks() {
       var root = getActiveFullRoot();
       var details = root && root.querySelector('.full-start-new__details');
@@ -4049,105 +3790,167 @@
         document.querySelector('.full-start-new');
     }
 
-    function atTopOfMovieScreen() {
-      var activeScroll = document.querySelector('.activity.activity--active .scroll--mask') ||
-        document.querySelector('.activity.activity--active .scroll__mask') ||
-        document.querySelector('.activity.activity--active .scroll__body') ||
-        document.querySelector('.activity.activity--active .scroll__content') ||
-        document.querySelector('.activity--active .scroll--mask') ||
-        document.querySelector('.activity--active .scroll__mask') ||
-        document.querySelector('.activity--active .scroll__body') ||
-        document.querySelector('.activity--active .scroll__content');
-      if (activeScroll && typeof activeScroll.scrollTop === 'number') {
-        return activeScroll.scrollTop <= 2;
-      }
-      var docTop = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
-      return docTop <= 2;
+    function isInterface1MobileMode() {
+      return getDeviceType() === 'mobile' && Lampa.Storage.get('lampac_screen_mobile_style', 'interface1') === 'interface1';
     }
 
-    function closeMobilePosterFullscreen() {
-      var old = document.getElementById('lampac-mobile-poster-fullscreen');
-      if (old && old.parentNode) old.parentNode.removeChild(old);
+    function closeMobilePosterOverlay(immediate) {
+      var overlay = document.querySelector('.lampac-mobile-poster-overlay');
+      if (!overlay) return;
       document.body.classList.remove('lampac-poster-fs-open');
+      if (immediate) {
+        try { if (overlay.parentNode) overlay.parentNode.removeChild(overlay); } catch (e) {}
+        return;
+      }
+      overlay.classList.remove('is-open');
+      clearTimeout(window.__lampacPosterOverlayCloseTimer);
+      window.__lampacPosterOverlayCloseTimer = setTimeout(function () {
+        try {
+          if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
+        } catch (e) {}
+      }, 380);
     }
 
-    function openMobilePosterFullscreen() {
-      closeMobilePosterFullscreen();
-      var root = getActiveFullRoot();
+    function resolveCardPosterSrc(card) {
+      if (!card) return '';
+
+      var candidate = '';
+      var sources = [
+        card.poster_path,
+        card.poster,
+        card.img,
+        card.image,
+        card.cover,
+        card.poster_url,
+        card.poster_big
+      ];
+
+      for (var i = 0; i < sources.length; i++) {
+        var value = sources[i];
+        if (!value) continue;
+
+        if (typeof value === 'string') {
+          candidate = value;
+        } else if (typeof value === 'object') {
+          candidate = value.src || value.url || value.file_path || value.poster_path || value.image || '';
+        }
+
+        if (candidate) break;
+      }
+
+      if (!candidate) return '';
+      if (/^https?:\/\//i.test(candidate)) return candidate;
+      if (/^\/\//.test(candidate)) return 'https:' + candidate;
+      if (/^data:image\//i.test(candidate)) return candidate;
+
+      if (candidate.charAt(0) === '/' && window.Lampa && Lampa.TMDB && Lampa.TMDB.image) {
+        return Lampa.TMDB.image('/t/p/w780' + candidate);
+      }
+
+      return '';
+    }
+
+    function openMobilePosterOverlay(root) {
+      if (!isInterface1MobileMode()) return;
+      root = root || getActiveFullRoot();
       if (!root) return;
-      var img = root.querySelector('.lampac-mobile-poster-card img') || root.querySelector('img.full-start__background') || root.querySelector('.full-start-new__img') || root.querySelector('.full-start__img');
-      var src = img && (img.currentSrc || img.src);
+
+      var activity = null;
+      var card = null;
+      var src = '';
+      try {
+        activity = window.Lampa && Lampa.Activity && Lampa.Activity.active ? Lampa.Activity.active() : null;
+        card = activity && activity.card;
+      } catch (e) {}
+
+      src = resolveCardPosterSrc(card);
+
+      if (!src) {
+        var img = root.querySelector('.full-start-new__img, .full--poster, .full-start__background');
+        src = img && (img.getAttribute('src') || img.src) || '';
+      }
       if (!src) return;
 
+      closeMobilePosterOverlay(true);
+
       var overlay = document.createElement('div');
-      overlay.id = 'lampac-mobile-poster-fullscreen';
-      overlay.style.cssText = [
-        'position:fixed',
-        'inset:0',
-        'z-index:2147483647',
-        'background:rgba(0,0,0,.96)',
-        'display:flex',
-        'align-items:center',
-        'justify-content:center',
-        'padding:0',
-        'cursor:pointer'
-      ].join(';');
+      overlay.className = 'lampac-mobile-poster-overlay';
+      overlay.innerHTML = '<img class="lampac-mobile-poster-overlay__img" alt="" src="' + src + '" />';
 
-      var poster = document.createElement('img');
-      poster.src = src;
-      poster.alt = '';
-      poster.style.cssText = 'max-width:100vw; max-height:100vh; width:auto; height:auto; object-fit:contain; display:block;';
-      overlay.appendChild(poster);
+      overlay.addEventListener('click', function () {
+        closeMobilePosterOverlay(false);
+      });
 
-      var close = function () { closeMobilePosterFullscreen(); };
-      overlay.addEventListener('click', close);
-      overlay.addEventListener('touchend', close, { passive: true });
       document.body.appendChild(overlay);
       document.body.classList.add('lampac-poster-fs-open');
+
+      requestAnimationFrame(function () {
+        overlay.classList.add('is-open');
+      });
     }
 
-    function setupMobilePosterSwipeOpen() {
-      if (window.innerWidth > 600) return;
-      if (window.__lampac_mobile_swipe_bound) return;
+    function bindMobilePosterSwipe() {
+      if (!isInterface1MobileMode()) {
+        closeMobilePosterOverlay(true);
+        return;
+      }
 
-      var startY = 0;
-      var startX = 0;
-      var tracking = false;
+      var root = getActiveFullRoot();
+      if (!root) return;
+      if (root.getAttribute('data-lampac-poster-swipe') === '1') return;
+      root.setAttribute('data-lampac-poster-swipe', '1');
 
-      document.addEventListener('touchstart', function (e) {
-        if (window.innerWidth > 600) return;
-        if (!e.touches || !e.touches[0]) return;
-        if (!atTopOfMovieScreen()) return;
+      var surface = root.querySelector('.full-start-new__body') || root;
+      if (!surface) return;
 
-        var root = getActiveFullRoot();
-        if (!root) return;
-        var target = e.target;
-        if (!target) return;
-        var inCurrentScreen = target.closest('.full-start-new');
-        if (!inCurrentScreen || inCurrentScreen !== root) return;
-        var inPoster = target.closest('.lampac-mobile-poster-card') || target.closest('.full-start-new__body');
-        if (!inPoster) return;
+      var gesture = null;
 
-        tracking = true;
-        startY = e.touches[0].clientY;
-        startX = e.touches[0].clientX;
+      function isAtScreenTop() {
+        var scrollHost = root.closest('.scroll__body') ||
+          document.querySelector('.activity.activity--active .scroll__body') ||
+          document.querySelector('.activity--active .scroll__body') ||
+          document.querySelector('.scroll__body');
+        var top = 0;
+        try {
+          top = scrollHost ? (scrollHost.scrollTop || 0) : (window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0);
+        } catch (e) {}
+        return top === 0;
+      }
+
+      surface.addEventListener('touchstart', function (e) {
+        if (!isInterface1MobileMode()) return;
+        if (!e.touches || e.touches.length !== 1) return;
+        if (document.body.classList.contains('lampac-poster-fs-open')) return;
+        if (!isAtScreenTop()) return;
+
+        var touch = e.touches[0];
+        var startY = touch.clientY;
+        var startX = touch.clientX;
+
+        gesture = {
+          x: startX,
+          y: startY,
+          time: Date.now()
+        };
       }, { passive: true });
 
-      document.addEventListener('touchmove', function (e) {
-        if (!tracking || window.innerWidth > 600) return;
-        if (!e.touches || !e.touches[0]) return;
-        var dy = e.touches[0].clientY - startY;
-        var dx = Math.abs(e.touches[0].clientX - startX);
-        if (dy > 70 && dx < 55) {
-          tracking = false;
-          openMobilePosterFullscreen();
-        }
+      surface.addEventListener('touchmove', function (e) {
+        if (!gesture || !e.touches || !e.touches.length) return;
+        var touch = e.touches[0];
+        gesture.dx = touch.clientX - gesture.x;
+        gesture.dy = touch.clientY - gesture.y;
       }, { passive: true });
 
-      document.addEventListener('touchend', function () { tracking = false; }, { passive: true });
-      window.__lampac_mobile_swipe_bound = true;
+      surface.addEventListener('touchend', function () {
+        if (!gesture) return;
+        var dy = gesture.dy || 0;
+        var dx = gesture.dx || 0;
+        var dt = Date.now() - gesture.time;
+        var shouldOpen = dy > 72 && Math.abs(dx) < 90 && dt < 650;
+        gesture = null;
+        if (shouldOpen) openMobilePosterOverlay(root);
+      }, { passive: true });
     }
-
 
     function getButtonReadableTitle(el) {
       if (!el) return '';
@@ -4205,6 +4008,7 @@
 
     function ensureButtonsFolder(root, buttonsEl, hideExtraButtons) {
       if (!root || !buttonsEl) return;
+      normalizeFullButtonSelectors(root);
       var reactionsHidden = false;
 
       var allBtns = buttonsEl.querySelectorAll('.full-start__button, .selector');
@@ -4348,6 +4152,7 @@
 
         ensureButtonsFolder(root, buttonsEl, hideExtraButtons);
         buttons_container = $(buttonsEl);
+        normalizeFullButtonSelectors(root);
 
         buttonsEl.setAttribute('data-unfolded', '1');
 
@@ -4411,7 +4216,6 @@
         quality: Lampa.Storage.get('lampac_online_show_quality', 'show'),
         timeline: Lampa.Storage.get('lampac_online_show_timeline', 'show'),
         watched: Lampa.Storage.get('lampac_online_watched_style', 'badge'),
-        mobileCompact: Lampa.Storage.get('lampac_online_mobile_compact', 'on'),
         titleLines: Lampa.Storage.get('lampac_online_title_lines', '2'),
         focusBoost: Lampa.Storage.get('lampac_online_tv_focus_boost', 'on')
       };
@@ -4450,8 +4254,7 @@
         (poster ? '.online-prestige--full{ align-items:stretch !important; } .online-prestige__img{ width:7.2em !important; min-width:7.2em !important; height:10.6em !important; } .online-prestige__body{ padding-left:.15em; }' : ''),
         (s.quality === 'hide' ? '.online-prestige__quality{ display:none !important; }' : ''),
         (s.timeline === 'hide' ? '.online-prestige__timeline{ display:none !important; }' : ''),
-        (s.watched === 'dim' ? '.online-prestige__viewed,.online-prestige-watched{ opacity:.82; }' : ''),
-        (s.mobileCompact === 'on' ? '@media(max-width:600px){ .online-prestige{ border-radius:1em; } .online-prestige--full{ padding:.72em !important; } .online-prestige__img{ width:' + (poster ? '5.8em' : '8.2em') + ' !important; min-width:' + (poster ? '5.8em' : '8.2em') + ' !important; height:' + (poster ? '8.6em' : '5.6em') + ' !important; } .online-prestige__title{ font-size:1.02em !important; } .online-prestige__info{ font-size:.92em !important; } }' : '')
+        (s.watched === 'dim' ? '.online-prestige__viewed,.online-prestige-watched{ opacity:.82; }' : '')
       ].join('\n');
     }
 
@@ -4484,18 +4287,33 @@
 
 
     function ensureFacade() {
-      window.AlcopacTheme = window.AlcopacTheme || { version: '5.0.0-demo', core: {}, theme: {}, cards: {}, full: {}, online: {}, mobile: {}, tools: {}, settings: {}, reapply: function () { try { applyTheme(Lampa.Storage.get(STORAGE_KEY, 'appletv')); } catch (e) {} try { applyCardDisplay(); } catch (e) {} try { applyScreenStyle(); } catch (e) {} try { applyOnlineTheme(); } catch (e) {} } };
+      window.AlcopacTheme = window.AlcopacTheme || { version: '5.0.0-demo', core: {}, theme: {}, cards: {}, full: {}, online: {}, mobile: {}, tools: {}, settings: {}, reapply: function () {
+        try {
+          if (isMobileViewport()) {
+            applyMobileThemeButtonsOnly(Lampa.Storage.get(STORAGE_KEY, 'appletv'));
+          } else {
+            applyTheme(Lampa.Storage.get(STORAGE_KEY, 'appletv'));
+            applyCardDisplay();
+            applyScreenStyle();
+          }
+        } catch (e) {}
+        try { applyOnlineTheme(); } catch (e) {}
+      } };
       var A = window.AlcopacTheme;
       A.core.STORAGE_KEY = STORAGE_KEY;
       A.core.STYLE_ID = STYLE_ID;
       A.core.ALL_CLASSES = ALL_CLASSES.slice();
-      A.theme.apply = function (name) { applyTheme(name || Lampa.Storage.get(STORAGE_KEY, 'appletv')); applyOnlineTheme(); };
+      A.theme.apply = function (name) {
+        if (isMobileViewport()) applyMobileThemeButtonsOnly(name || Lampa.Storage.get(STORAGE_KEY, 'appletv'));
+        else applyTheme(name || Lampa.Storage.get(STORAGE_KEY, 'appletv'));
+        applyOnlineTheme();
+      };
       A.theme.getActiveName = getActiveThemeName;
       A.theme.getActiveTokens = getActiveThemeTokens;
       A.cards.apply = applyCardDisplay;
       A.full.apply = applyScreenStyle;
       A.full.reorderButtons = function (force) { window.__alcopac_theme_full_controls_buttons = true; return promoteFolderButtons(force); };
-      A.mobile.apply = function () { renderMobilePosterCard(); applyAutoContrast(); setupMobilePosterSwipeOpen(); };
+      A.mobile.apply = function () { return null; };
       A.tools.handle = handleToolsAction;
       A.online.apply = applyOnlineTheme;
       A.online.registerTemplates = registerOnlineTemplates;
@@ -4570,10 +4388,8 @@
       try { placeDetailsAfterTagline(); } catch (e) {}
       try { renderCompactMetaLine(); } catch (e) {}
       try { renderWatchProgress(); } catch (e) {}
-      try { renderMobilePosterCard(); } catch (e) {}
       try { hideEmptyBlocks(); } catch (e) {}
-      try { applyAutoContrast(); } catch (e) {}
-      try { setupMobilePosterSwipeOpen(); } catch (e) {}
+      try { bindMobilePosterSwipe(); } catch (e) {}
     }
 
     Lampa.Listener.follow('full', function (e) {
@@ -4602,6 +4418,9 @@
 
     Lampa.Listener.follow('activity', function (e) {
       if (!e || (e.type !== 'start' && e.type !== 'activity' && e.type !== 'after')) return;
+      if (e.type === 'start') {
+        try { closeMobilePosterOverlay(true); } catch (e2) {}
+      }
       clearTimeout(__alcopac_full_stage_timer);
       clearTimeout(__alcopac_full_stage_timer2);
       clearTimeout(__alcopac_full_stage_timer3);
@@ -4613,10 +4432,7 @@
       }, 320);
     });
 
-    if (!Lampa.Storage.get('lampac_screen_mobile_bg', '')) {
-      Lampa.Storage.set('lampac_screen_mobile_bg', Lampa.Storage.get(STORAGE_KEY, 'classic') === 'classic' ? 'poster' : 'black');
-    }
-    setMobilePosterBgVars();
+    registerInterface1MobileTemplate();
     applyTheme(Lampa.Storage.get(STORAGE_KEY, 'classic'));
     applyAutoThemeByTime();
     if (!window.__lampac_auto_theme_timer) {
@@ -4960,7 +4776,6 @@
       themeProfile: 'lampac_theme_profile',
       screenLayout: 'lampac_screen_layout',
       cardsView: 'lampac_card_view',
-      mobileProfile: 'lampac_screen_profile_mobile',
       desktopProfile: 'lampac_screen_profile_desktop',
       tvProfile: 'lampac_screen_profile_tv'
     };
@@ -4972,14 +4787,14 @@
         theme: storageGet('lampac_theme', 'classic'),
         themeProfile: storageGet('lampac_theme_profile', 'default'),
         screenLayout: storageGet('lampac_screen_layout', 'default'),
-        mobileProfile: storageGet('lampac_screen_profile_mobile', 'compact'),
         desktopProfile: storageGet('lampac_screen_profile_desktop', 'default'),
         tvProfile: storageGet('lampac_screen_profile_tv', 'cinema')
       };
     };
     A.profiles.applyDevice = A.profiles.applyDevice || function(){
       var device = A.core.getDeviceType();
-      var value = storageGet('lampac_screen_profile_' + device, device === 'tv' ? 'cinema' : (device === 'mobile' ? 'compact' : 'default'));
+      var profileKey = device === 'tv' ? 'lampac_screen_profile_tv' : 'lampac_screen_profile_desktop';
+      var value = storageGet(profileKey, device === 'tv' ? 'cinema' : 'default');
       A.core.storageSet('lampac_screen_profile', value);
       A.hooks.emit('profiles:device', {device: device, profile: value});
       if (typeof A.reapply === 'function') A.reapply();
@@ -5001,6 +4816,12 @@
     };
 
     A.reapply = A.reapply || function(){
+      if (isMobileViewport()) {
+        call(A.theme.reapply);
+        call(A.online.refresh);
+        A.hooks.emit('app:reapply', {theme: A.theme.getActiveName(), device: A.core.getDeviceType()});
+        return;
+      }
       call(A.theme.reapply);
       call(A.cards.refresh);
       call(A.full.refresh);
@@ -5095,7 +4916,7 @@
         lampac_screen_compact: false,
         lampac_screen_compact_meta: false,
         lampac_screen_large_buttons: false,
-        lampac_screen_title_logo: 'hide',
+        lampac_screen_title_logo: 'show',
         lampac_screen_cinema_desc: false
       },
       compact: {
@@ -5103,7 +4924,7 @@
         lampac_screen_compact: true,
         lampac_screen_compact_meta: true,
         lampac_screen_large_buttons: false,
-        lampac_screen_title_logo: 'hide',
+        lampac_screen_title_logo: 'show',
         lampac_screen_cinema_desc: false
       },
       cinema: {
@@ -5120,7 +4941,7 @@
         lampac_screen_compact: false,
         lampac_screen_compact_meta: false,
         lampac_screen_large_buttons: true,
-        lampac_screen_title_logo: 'hide',
+        lampac_screen_title_logo: 'show',
         lampac_screen_cinema_desc: false
       }
     };
@@ -5138,7 +4959,6 @@
       theme: p.theme || 'classic',
       themeProfile: p.themeProfile || 'default',
       screenLayout: p.screenLayout || 'default',
-      mobileProfile: p.mobileProfile || 'compact',
       desktopProfile: p.desktopProfile || 'default',
       tvProfile: p.tvProfile || 'cinema'
     };
@@ -5278,7 +5098,6 @@
       compactMode: g('lampac_screen_compact_mode', 'normal'),
       buttonSize: g('lampac_screen_button_size', 'normal'),
       deviceProfiles: g('lampac_screen_device_profiles', 'off'),
-      mobileProfile: g('lampac_screen_profile_mobile', 'default'),
       desktopProfile: g('lampac_screen_profile_desktop', 'default'),
       tvProfile: g('lampac_screen_profile_tv', 'default')
     };
@@ -5744,7 +5563,6 @@
     s.textContent = [
       '.full-start-new.alcopac-full-has-logo .full-start-new__logo{display:block; margin:0 0 .65em 0; line-height:0;}',
       '.full-start-new.alcopac-full-has-logo .full-start-new__logo img{display:block; width:auto; max-width:min(100%, 26em); object-fit:contain;}',
-      'body.mobile .full-start-new.alcopac-full-has-logo .full-start-new__logo img{max-width:min(100%, 18em);}',
       '.full-start-new.alcopac-full-has-logo .full-start-new__title{display:none !important;}',
       '.full-start-new:not(.alcopac-full-has-logo) .full-start-new__title{display:block;}',
       '.full-start-new .full-start-new__title{margin-bottom:.28em;}',
@@ -5758,6 +5576,7 @@
       '.full-start-new .alcopac-compact-meta-line{margin-top:.38em; margin-bottom:.22em;}',
       '.full-start-new .alcopac-compact-meta-line:empty{display:none !important;}',
       '.full-start-new .full-start-new__logo:empty{display:none !important;}',
+      '@media screen and (max-width: 480px){.full-start-new.alcopac-full-has-logo .full-start-new__logo img{max-width:min(100%, 19em) !important; max-height:6.6em !important;}}',
       '.full-start-new .full-start-new__right{contain:layout style;}',
       '.full-start-new.alcopac-full-hero-polished .full-start-new__buttons > *{transition:none !important; animation:none !important;}',
       '.full-start-new.alcopac-full-hero-polished .full-start-new__descr, .full-start-new.alcopac-full-hero-polished .full-start-new__title, .full-start-new.alcopac-full-hero-polished .full-start-new__details{transition:none !important; animation:none !important;}'
@@ -5851,15 +5670,13 @@
 
 ;(function(){
   try {
-    var STYLE_ID = 'alcopac-tv-mobile-buttons-fix-style';
+    var STYLE_ID = 'alcopac-tv-buttons-fix-style';
     if (!document.getElementById(STYLE_ID)) {
       var st = document.createElement('style');
       st.id = STYLE_ID;
       st.textContent = [
         'body.tv .full-start-new__buttons, body.tv .full-start__buttons, body.tv--device .full-start-new__buttons, body.tv--device .full-start__buttons{display:flex !important; visibility:visible !important; opacity:1 !important;}',
-        '@media (max-width: 900px){.full-start-new__buttons, .full-start__buttons{display:flex !important; visibility:visible !important; opacity:1 !important;}}',
-        'body.tv .full-start-new__buttons .full-start__button, body.tv .full-start-new__buttons .full-start-new__button, body.tv .full-start-new__buttons .selector, body.tv .full-start__buttons .full-start__button, body.tv .full-start__buttons .full-start-new__button, body.tv .full-start__buttons .selector, body.tv--device .full-start-new__buttons .full-start__button, body.tv--device .full-start-new__buttons .full-start-new__button, body.tv--device .full-start-new__buttons .selector, body.tv--device .full-start__buttons .full-start__button, body.tv--device .full-start__buttons .full-start-new__button, body.tv--device .full-start__buttons .selector{display:inline-flex !important; visibility:visible !important; opacity:1 !important;}',
-        '@media (max-width: 900px){.full-start-new__buttons .full-start__button, .full-start-new__buttons .full-start-new__button, .full-start-new__buttons .selector, .full-start__buttons .full-start__button, .full-start__buttons .full-start-new__button, .full-start__buttons .selector{display:inline-flex !important; visibility:visible !important; opacity:1 !important;}}'
+        'body.tv .full-start-new__buttons .full-start__button, body.tv .full-start-new__buttons .full-start-new__button, body.tv .full-start-new__buttons .selector, body.tv .full-start__buttons .full-start__button, body.tv .full-start__buttons .full-start-new__button, body.tv .full-start__buttons .selector, body.tv--device .full-start-new__buttons .full-start__button, body.tv--device .full-start-new__buttons .full-start-new__button, body.tv--device .full-start-new__buttons .selector, body.tv--device .full-start__buttons .full-start__button, body.tv--device .full-start__buttons .full-start-new__button, body.tv--device .full-start__buttons .selector{display:inline-flex !important; visibility:visible !important; opacity:1 !important;}'
       ].join('');
       document.head.appendChild(st);
     }
@@ -5868,10 +5685,9 @@
       try {
         if (window.Lampa && Lampa.Platform){
           if (Lampa.Platform.tv && Lampa.Platform.tv()) return true;
-          if (Lampa.Platform.mobile && Lampa.Platform.mobile()) return true;
         }
       } catch(e){}
-      return window.innerWidth <= 900;
+      return false;
     }
 
   function fixButtons(){
@@ -5930,31 +5746,29 @@
     } catch(e){}
     var mo = new MutationObserver(function(){ fixButtons(); });
     mo.observe(document.body, {childList:true, subtree:true});
-  } catch(e) { console.error('[AlcopacTheme][tv-mobile-buttons-fix]', e); }
+  } catch(e) { console.error('[AlcopacTheme][tv-buttons-fix]', e); }
 })();
 
 
-/* --- gap fix for tv/mobile full buttons --- */
+/* --- gap fix for tv full buttons --- */
 (function(){
   'use strict';
   function needFix(){
     try {
       if (window.Lampa && Lampa.Platform){
         if (Lampa.Platform.tv && Lampa.Platform.tv()) return true;
-        if (Lampa.Platform.mobile && Lampa.Platform.mobile()) return true;
       }
     } catch(e){}
-    return window.innerWidth <= 900;
+    return false;
   }
   function ensureStyle(){
-    var id='alcopac-tv-mobile-buttons-gap-fix';
+    var id='alcopac-tv-buttons-gap-fix';
     var st=document.getElementById(id);
     if (!st){ st=document.createElement('style'); st.id=id; document.head.appendChild(st); }
     st.textContent = [
-      'body.tv .full-start-new__buttons, body.tv .full-start__buttons, body.tv--device .full-start-new__buttons, body.tv--device .full-start__buttons, .full-start-new__buttons, .full-start__buttons{justify-content:flex-start !important; align-items:center !important; column-gap:.5em !important; row-gap:.5em !important;}',
-      'body.tv .full-start-new__buttons > *, body.tv .full-start__buttons > *, body.tv--device .full-start-new__buttons > *, body.tv--device .full-start__buttons > *, .full-start-new__buttons > *, .full-start__buttons > *{margin-left:0 !important; margin-right:0 !important; flex:0 0 auto !important;}',
-      'body.tv .full-start-new__buttons > *.alcopac-force-hidden, body.tv .full-start__buttons > *.alcopac-force-hidden, body.tv--device .full-start-new__buttons > *.alcopac-force-hidden, body.tv--device .full-start__buttons > *.alcopac-force-hidden, .full-start-new__buttons > *.alcopac-force-hidden, .full-start__buttons > *.alcopac-force-hidden{display:none !important; visibility:hidden !important; opacity:0 !important; width:0 !important; min-width:0 !important; margin:0 !important; padding:0 !important; border:0 !important; overflow:hidden !important;}',
-      '@media (max-width: 900px){.full-start-new__buttons,.full-start__buttons{justify-content:flex-start !important; align-items:center !important; column-gap:.5em !important; row-gap:.5em !important;}.full-start-new__buttons > *, .full-start__buttons > *{margin-left:0 !important; margin-right:0 !important; flex:0 0 auto !important;}}'
+      'body.tv .full-start-new__buttons, body.tv .full-start__buttons, body.tv--device .full-start-new__buttons, body.tv--device .full-start__buttons{justify-content:flex-start !important; align-items:center !important; column-gap:.5em !important; row-gap:.5em !important;}',
+      'body.tv .full-start-new__buttons > *, body.tv .full-start__buttons > *, body.tv--device .full-start-new__buttons > *, body.tv--device .full-start__buttons > *{margin-left:0 !important; margin-right:0 !important; flex:0 0 auto !important;}',
+      'body.tv .full-start-new__buttons > *.alcopac-force-hidden, body.tv .full-start__buttons > *.alcopac-force-hidden, body.tv--device .full-start-new__buttons > *.alcopac-force-hidden, body.tv--device .full-start__buttons > *.alcopac-force-hidden{display:none !important; visibility:hidden !important; opacity:0 !important; width:0 !important; min-width:0 !important; margin:0 !important; padding:0 !important; border:0 !important; overflow:hidden !important;}'
     ].join('');
   }
   function fix(){
@@ -6310,286 +6124,6 @@
   } catch(e){}
 })();
 
-/* ===== Hotfix: mobile hard centering for logo/meta/buttons ===== */
-(function(){
-  'use strict';
-  function ensureMobileCenterStyle(){
-    if (document.getElementById('lampac-mobile-hard-center-style')) return;
-    var st = document.createElement('style');
-    st.id = 'lampac-mobile-hard-center-style';
-    st.textContent = [
-      '@media (max-width: 820px){',
-      '  body.mobile .full-start-new .full-start-new__right, body.mobile .full-start .full-start__right, .mobile .full-start-new .full-start-new__right, .mobile .full-start .full-start__right{width:100% !important; max-width:none !important; align-items:center !important; text-align:center !important;}',
-      '  body.mobile .full-start-new .full-start-new__head, body.mobile .full-start-new .full-start-new__tagline, body.mobile .full-start-new .full-start-new__title, body.mobile .full-start-new .full-start-new__logo, body.mobile .full-start-new .full-start-new__details, body.mobile .full-start-new .full-start-new__rate-line, body.mobile .full-start-new .full-start-new__reactions, body.mobile .full-start-new .full-start-new__buttons, body.mobile .full-start-new .full-start-new__descr, body.mobile .full-start .full-start__head, body.mobile .full-start .full-start__title, body.mobile .full-start .full-start__details, body.mobile .full-start .full-start__rate-line, body.mobile .full-start .full-start__reactions, body.mobile .full-start .full-start__buttons, .mobile .full-start-new .full-start-new__head, .mobile .full-start-new .full-start-new__tagline, .mobile .full-start-new .full-start-new__title, .mobile .full-start-new .full-start-new__logo, .mobile .full-start-new .full-start-new__details, .mobile .full-start-new .full-start-new__rate-line, .mobile .full-start-new .full-start-new__reactions, .mobile .full-start-new .full-start-new__buttons, .mobile .full-start-new .full-start-new__descr, .mobile .full-start .full-start__head, .mobile .full-start .full-start__title, .mobile .full-start .full-start__details, .mobile .full-start .full-start__rate-line, .mobile .full-start .full-start__reactions, .mobile .full-start .full-start__buttons{text-align:center !important; margin-left:auto !important; margin-right:auto !important;}',
-      '  body.mobile .full-start-new .full-start-new__details, body.mobile .full-start-new .full-start-new__rate-line, body.mobile .full-start-new .full-start-new__reactions, body.mobile .full-start-new .full-start-new__buttons, body.mobile .full-start .full-start__details, body.mobile .full-start .full-start__rate-line, body.mobile .full-start .full-start__reactions, body.mobile .full-start .full-start__buttons, .mobile .full-start-new .full-start-new__details, .mobile .full-start-new .full-start-new__rate-line, .mobile .full-start-new .full-start-new__reactions, .mobile .full-start-new .full-start-new__buttons, .mobile .full-start .full-start__details, .mobile .full-start .full-start__rate-line, .mobile .full-start .full-start__reactions, .mobile .full-start .full-start__buttons{display:flex !important; flex-wrap:wrap !important; justify-content:center !important; align-items:center !important; width:100% !important;}',
-      '  body.mobile .full-start-new .full-start-new__logo, body.mobile .full-start .full-start__logo, .mobile .full-start-new .full-start-new__logo, .mobile .full-start .full-start__logo{display:flex !important; justify-content:center !important; align-items:center !important; width:100% !important; left:auto !important; right:auto !important;}',
-      '  body.mobile .full-start-new .full-start-new__logo img, body.mobile .full-start .full-start__logo img, .mobile .full-start-new .full-start-new__logo img, .mobile .full-start .full-start__logo img{display:block !important; margin-left:auto !important; margin-right:auto !important; object-fit:contain !important;}',
-      '  body.mobile .full-start-new .full-start-new__title, body.mobile .full-start .full-start__title, body.mobile .lampac-meta-line, .mobile .full-start-new .full-start-new__title, .mobile .full-start .full-start__title, .mobile .lampac-meta-line{width:100% !important; text-align:center !important;}',
-      '  body.mobile .full-start-new .full-start-new__buttons, body.mobile .full-start .full-start__buttons, .mobile .full-start-new .full-start-new__buttons, .mobile .full-start .full-start__buttons{justify-content:center !important; margin-left:auto !important; margin-right:auto !important;}',
-      '}',
-    ].join('');
-    document.head.appendChild(st);
-  }
-  function reflowMobileCenter(){
-    if (!(document.body.classList.contains('mobile') || window.innerWidth <= 820)) return;
-    var root = document.querySelector('.activity.activity--active .full-start-new, .activity--active .full-start-new, .full-start-new, .activity.activity--active .full-start, .activity--active .full-start, .full-start');
-    if (!root) return;
-    var right = root.querySelector('.full-start-new__right, .full-start__right');
-    if (right){
-      right.style.alignItems = 'center';
-      right.style.textAlign = 'center';
-      right.style.maxWidth = 'none';
-      right.style.width = '100%';
-    }
-    var sels = ['.full-start-new__head','.full-start-new__tagline','.full-start-new__title','.full-start-new__logo','.full-start-new__details','.full-start-new__rate-line','.full-start-new__reactions','.full-start-new__buttons','.full-start__head','.full-start__title','.full-start__logo','.full-start__details','.full-start__rate-line','.full-start__reactions','.full-start__buttons','.lampac-meta-line'];
-    sels.forEach(function(sel){
-      root.querySelectorAll(sel).forEach(function(el){
-        el.style.textAlign = 'center';
-        el.style.marginLeft = 'auto';
-        el.style.marginRight = 'auto';
-      });
-    });
-    root.querySelectorAll('.full-start-new__details, .full-start-new__rate-line, .full-start-new__reactions, .full-start-new__buttons, .full-start__details, .full-start__rate-line, .full-start__reactions, .full-start__buttons').forEach(function(el){
-      el.style.display = 'flex';
-      el.style.flexWrap = 'wrap';
-      el.style.justifyContent = 'center';
-      el.style.alignItems = 'center';
-      el.style.width = '100%';
-    });
-    root.querySelectorAll('.full-start-new__logo, .full-start__logo').forEach(function(el){
-      el.style.display = 'flex';
-      el.style.justifyContent = 'center';
-      el.style.alignItems = 'center';
-      el.style.width = '100%';
-    });
-    root.querySelectorAll('.full-start-new__logo img, .full-start__logo img').forEach(function(img){
-      img.style.display = 'block';
-      img.style.marginLeft = 'auto';
-      img.style.marginRight = 'auto';
-      img.style.objectFit = 'contain';
-    });
-  }
-  ensureMobileCenterStyle();
-  if (window.Lampa && Lampa.Listener && Lampa.Listener.follow){
-    Lampa.Listener.follow('full', function(e){
-      if (e.type === 'complite') {
-        setTimeout(reflowMobileCenter, 0);
-        setTimeout(reflowMobileCenter, 120);
-        setTimeout(reflowMobileCenter, 400);
-        setTimeout(reflowMobileCenter, 900);
-      }
-    });
-  }
-  document.addEventListener('readystatechange', function(){ if (document.readyState === 'complete') ensureMobileCenterStyle(); });
-  window.addEventListener('resize', function(){ setTimeout(reflowMobileCenter, 50); }, {passive:true});
-})();
-
-
-/* --- mobile hard center patch for logo/rates/reactions/buttons --- */
-(function(){
-  'use strict';
-  function isMobile(){
-    try {
-      if (window.Lampa && Lampa.Platform && typeof Lampa.Platform.mobile === 'function' && Lampa.Platform.mobile()) return true;
-    } catch(e){}
-    return window.innerWidth <= 600;
-  }
-  function ensureStyle(){
-    var id='alcopac-mobile-hard-center-v2';
-    var st=document.getElementById(id);
-    if(!st){ st=document.createElement('style'); st.id=id; document.head.appendChild(st); }
-    st.textContent=[
-      '@media (max-width: 600px){',
-      '  .full-start-new__right, .full-start__right { text-align:center !important; align-items:center !important; }',
-      '  .full-start-new__logo, .full-start__logo, .full-start-new__title, .full-start__title, .full-start-new__head, .full-start__head, .full-start-new__tagline, .full-start__tagline, .full-start-new__details, .full-start__details { margin-left:auto !important; margin-right:auto !important; text-align:center !important; }',
-      '  .full-start-new__logo, .full-start__logo { display:flex !important; justify-content:center !important; width:100% !important; }',
-      '  .full-start-new__logo img, .full-start__logo img { display:block !important; margin-left:auto !important; margin-right:auto !important; }',
-      '  .full-start-new__rate-line, .full-start__rate-line, .full-start-new__reactions, .full-start__reactions { display:flex !important; flex-wrap:wrap !important; justify-content:center !important; align-items:center !important; width:fit-content !important; max-width:100% !important; margin-left:auto !important; margin-right:auto !important; text-align:center !important; }',
-      '  .full-start-new__rate-line > *, .full-start__rate-line > *, .full-start-new__reactions > *, .full-start__reactions > * { flex:0 0 auto !important; margin-left:0 !important; margin-right:0 !important; }',
-      '  .full-start-new__buttons, .full-start__buttons { display:flex !important; flex-wrap:wrap !important; justify-content:center !important; align-items:center !important; align-content:center !important; width:fit-content !important; max-width:100% !important; margin-left:auto !important; margin-right:auto !important; text-align:center !important; overflow:visible !important; }',
-      '  .full-start-new__buttons > *, .full-start__buttons > * { flex:0 0 auto !important; margin-left:0 !important; margin-right:0 !important; }',
-      '}'
-    ].join('');
-  }
-  function reflow(){
-    if(!isMobile()) return;
-    ensureStyle();
-    var root=document.querySelector('.activity.activity--active .full-start-new, .activity.activity--active .full-start, .full-start-new, .full-start');
-    if(!root) return;
-    ['.full-start-new__logo','.full-start__logo','.full-start-new__title','.full-start__title','.full-start-new__head','.full-start__head','.full-start-new__tagline','.full-start__tagline','.full-start-new__details','.full-start__details'].forEach(function(sel){
-      root.querySelectorAll(sel).forEach(function(el){
-        el.style.textAlign='center';
-        el.style.marginLeft='auto';
-        el.style.marginRight='auto';
-      });
-    });
-    root.querySelectorAll('.full-start-new__rate-line, .full-start__rate-line, .full-start-new__reactions, .full-start__reactions').forEach(function(el){
-      el.style.display='flex';
-      el.style.flexWrap='wrap';
-      el.style.justifyContent='center';
-      el.style.alignItems='center';
-      el.style.width='fit-content';
-      el.style.maxWidth='100%';
-      el.style.marginLeft='auto';
-      el.style.marginRight='auto';
-      el.style.textAlign='center';
-    });
-    root.querySelectorAll('.full-start-new__buttons, .full-start__buttons').forEach(function(el){
-      el.style.display='flex';
-      el.style.flexWrap='wrap';
-      el.style.justifyContent='center';
-      el.style.alignItems='center';
-      el.style.alignContent='center';
-      el.style.width='fit-content';
-      el.style.maxWidth='100%';
-      el.style.marginLeft='auto';
-      el.style.marginRight='auto';
-      el.style.overflow='visible';
-      el.style.textAlign='center';
-    });
-  }
-  ensureStyle();
-  if(document.readyState==='complete' || document.readyState==='interactive') setTimeout(reflow,0);
-  document.addEventListener('readystatechange', function(){ if(document.readyState==='complete') setTimeout(reflow,0); });
-  if(window.Lampa && Lampa.Listener && Lampa.Listener.follow){
-    Lampa.Listener.follow('full', function(e){
-      if(e.type==='complite'){
-        setTimeout(reflow,0);
-        setTimeout(reflow,120);
-        setTimeout(reflow,350);
-        setTimeout(reflow,800);
-      }
-    });
-  }
-  window.addEventListener('resize', function(){ setTimeout(reflow,50); }, {passive:true});
-})();
-
-
-/* --- mobile absolute center override v3 --- */
-(function(){
-  'use strict';
-  function isMobile(){
-    try {
-      if (window.Lampa && Lampa.Platform && typeof Lampa.Platform.mobile === 'function' && Lampa.Platform.mobile()) return true;
-    } catch(e){}
-    return window.innerWidth <= 820 || document.body.classList.contains('mobile');
-  }
-  function ensureStyle(){
-    var id='alcopac-mobile-center-v3';
-    if(document.getElementById(id)) return;
-    var st=document.createElement('style');
-    st.id=id;
-    st.textContent=[
-      '@media (max-width: 820px){',
-      '  .full-start-new__right, .full-start__right { width:100% !important; max-width:none !important; text-align:center !important; align-items:center !important; }',
-      '  .full-start-new__head, .full-start__title, .full-start-new__title, .full-start__logo, .full-start-new__logo, .full-start-new__tagline, .full-start__tagline, .full-start-new__details, .full-start__details, .lampac-meta-line { width:auto !important; max-width:100% !important; text-align:center !important; margin-left:auto !important; margin-right:auto !important; }',
-      '  .full-start-new__logo, .full-start__logo { display:flex !important; justify-content:center !important; }',
-      '  .full-start-new__logo img, .full-start__logo img { display:block !important; margin-left:auto !important; margin-right:auto !important; }',
-      '  .full-start-new__rate-line, .full-start__rate-line, .full-start-new__reactions, .full-start__reactions, .full-start-new__buttons, .full-start__buttons { position:static !important; left:auto !important; right:auto !important; transform:none !important; width:fit-content !important; max-width:calc(100% - 1.2em) !important; margin-left:auto !important; margin-right:auto !important; justify-content:center !important; align-items:center !important; align-content:center !important; text-align:center !important; }',
-      '  .full-start-new__rate-line, .full-start__rate-line, .full-start-new__reactions, .full-start__reactions, .full-start-new__buttons, .full-start__buttons { display:flex !important; flex-wrap:wrap !important; }',
-      '  .full-start-new__rate-line > *, .full-start__rate-line > *, .full-start-new__reactions > *, .full-start__reactions > *, .full-start-new__buttons > *, .full-start__buttons > * { flex:0 0 auto !important; margin-left:0 !important; margin-right:0 !important; }',
-      '}'
-    ].join('');
-    document.head.appendChild(st);
-  }
-  function apply(){
-    if(!isMobile()) return;
-    ensureStyle();
-    var root=document.querySelector('.activity.activity--active .full-start-new, .activity.activity--active .full-start, .full-start-new, .full-start');
-    if(!root) return;
-    var right=root.querySelector('.full-start-new__right, .full-start__right');
-    if(right){
-      right.style.width='100%';
-      right.style.maxWidth='none';
-      right.style.textAlign='center';
-      right.style.alignItems='center';
-    }
-    root.querySelectorAll('.full-start-new__head, .full-start__head, .full-start-new__title, .full-start__title, .full-start-new__logo, .full-start__logo, .full-start-new__tagline, .full-start__tagline, .full-start-new__details, .full-start__details, .lampac-meta-line').forEach(function(el){
-      el.style.textAlign='center';
-      el.style.marginLeft='auto';
-      el.style.marginRight='auto';
-      el.style.width='auto';
-      el.style.maxWidth='100%';
-    });
-    root.querySelectorAll('.full-start-new__rate-line, .full-start__rate-line, .full-start-new__reactions, .full-start__reactions, .full-start-new__buttons, .full-start__buttons').forEach(function(el){
-      el.style.display='flex';
-      el.style.flexWrap='wrap';
-      el.style.justifyContent='center';
-      el.style.alignItems='center';
-      el.style.alignContent='center';
-      el.style.position='static';
-      el.style.left='auto';
-      el.style.right='auto';
-      el.style.transform='none';
-      el.style.width='fit-content';
-      el.style.maxWidth='calc(100% - 1.2em)';
-      el.style.marginLeft='auto';
-      el.style.marginRight='auto';
-      el.style.textAlign='center';
-    });
-  }
-  if(document.readyState==='complete' || document.readyState==='interactive') setTimeout(apply,0);
-  document.addEventListener('readystatechange', function(){ if(document.readyState==='complete') setTimeout(apply,0); });
-  if(window.Lampa && Lampa.Listener && Lampa.Listener.follow){
-    Lampa.Listener.follow('full', function(e){
-      if(e.type==='complite'){
-        setTimeout(apply,0);
-        setTimeout(apply,120);
-        setTimeout(apply,350);
-        setTimeout(apply,800);
-      }
-    });
-  }
-  window.addEventListener('resize', function(){ setTimeout(apply,50); }, {passive:true});
-})();
-
-;(function(){
-  try{
-    function mobileCenterFinal(){
-      var mobile = (window.innerWidth <= 820) || document.body.classList.contains('mobile');
-      if(!mobile) return;
-      var root = document.querySelector('.activity.activity--active .full-start-new, .activity.activity--active .full-start, .full-start-new, .full-start');
-      if(!root) return;
-      root.querySelectorAll('.full-start-new__rate-line, .full-start__rate-line, .full-start-new__reactions, .full-start__reactions, .full-start-new__buttons, .full-start__buttons').forEach(function(el){
-        el.style.setProperty('position','static','important');
-        el.style.setProperty('left','auto','important');
-        el.style.setProperty('right','auto','important');
-        el.style.setProperty('transform','none','important');
-        el.style.setProperty('width','fit-content','important');
-        el.style.setProperty('max-width','calc(100% - 1.2em)','important');
-        el.style.setProperty('margin-left','auto','important');
-        el.style.setProperty('margin-right','auto','important');
-        el.style.setProperty('justify-content','center','important');
-        el.style.setProperty('align-items','center','important');
-        el.style.setProperty('align-content','center','important');
-        el.style.setProperty('text-align','center','important');
-        el.style.setProperty('display','flex','important');
-        el.style.setProperty('flex-wrap','wrap','important');
-      });
-      root.querySelectorAll('.full-start-new__logo, .full-start__logo, .full-start-new__title, .full-start__title, .full-start-new__head, .full-start__head, .full-start-new__tagline, .full-start__tagline, .full-start-new__details, .full-start__details, .lampac-meta-line').forEach(function(el){
-        el.style.setProperty('margin-left','auto','important');
-        el.style.setProperty('margin-right','auto','important');
-        el.style.setProperty('text-align','center','important');
-      });
-    }
-    if(document.readyState === 'complete' || document.readyState === 'interactive'){
-      setTimeout(mobileCenterFinal, 0);
-    }
-    document.addEventListener('readystatechange', function(){
-      if(document.readyState === 'complete') setTimeout(mobileCenterFinal, 0);
-    });
-    if(window.Lampa && Lampa.Listener && Lampa.Listener.follow){
-      Lampa.Listener.follow('full', function(e){
-        if(e && e.type === 'complite'){
-          setTimeout(mobileCenterFinal, 0);
-          setTimeout(mobileCenterFinal, 120);
-          setTimeout(mobileCenterFinal, 350);
-          setTimeout(mobileCenterFinal, 800);
-        }
-      });
-    }
-  }catch(e){}
-})();
 /* ===== TORRENT FOCUS FIX (CLEAN v2) ===== */
 
 var LampaTorrentFix = (function(){
