@@ -1303,7 +1303,7 @@
   // ─── Theme Application ──────────────────────────────────
   function applyTheme(name) {
     if (isMobileViewport()) {
-      applyMobileButtonTheme(name);
+      applyInterface1MobileClone();
       return;
     }
     var existing = document.getElementById(STYLE_ID);
@@ -1342,12 +1342,95 @@
       return tvHint ? 'tv' : 'desktop';
     }
 
+    function applyInterface1MobileClone() {
+      if (getDeviceType() !== 'mobile') return;
+
+      document.body.classList.add('lampac-mobile-clone');
+
+      var oldTheme = document.getElementById(STYLE_ID);
+      if (oldTheme) oldTheme.parentNode.removeChild(oldTheme);
+      var oldAmbient = document.getElementById(STYLE_ID + '-ambient');
+      if (oldAmbient) oldAmbient.parentNode.removeChild(oldAmbient);
+      var oldScreen = document.getElementById(SCREEN_STYLE_ID);
+      if (oldScreen) oldScreen.parentNode.removeChild(oldScreen);
+
+      var fullFix = document.getElementById('lampac-fullstart-fix');
+      if (fullFix) fullFix.parentNode.removeChild(fullFix);
+
+      var clone = document.getElementById('interface1-mobile-clone-style');
+      if (!clone) {
+        clone = document.createElement('style');
+        clone.id = 'interface1-mobile-clone-style';
+        clone.type = 'text/css';
+        clone.textContent = [
+          ':root {',
+          ' --main-color: #17191f;',
+          ' --secondary-color: #0f1116;',
+          ' --background-color: rgba(12, 13, 17, 0.98);',
+          ' --text-color: #fff;',
+          ' --transparent-accent: rgba(255, 255, 255, 0.06);',
+          '}',
+          'html, body, .extensions { background: linear-gradient(135deg, #0d0e12, #12141a, #0f1014) !important; color: #ffffff !important; }',
+          '.navigation-bar__body { background: rgba(12, 13, 17, 0.98) !important; }',
+          '.card__quality, .card__type::after { background: rgba(12, 13, 17, 0.82) !important; border: 1px solid rgba(255,255,255,0.08) !important; }',
+          '.company-start.icon--broken .company-start__icon, .explorer-card__head-img > img, .bookmarks-folder__layer, .card-more__box, .card__img, .extensions__block-add, .extensions__item { background-color: rgba(26, 42, 58, 0.98) !important; }',
+          '.watched-history.focus, .search-source.focus, .simple-button.focus, .menu__item.focus, .menu__item.traverse, .menu__item.hover, .full-start__button.focus, .full-descr__tag.focus, .player-panel .button.focus, .full-person.selector.focus, .tag-count.selector.focus, .full-review.focus { background: linear-gradient(to right, #1a1c22, #101216) !important; color: #fff !important; box-shadow: 0 0 0.3em rgba(255, 255, 255, 0.08) !important; border-radius: 0.4em !important; }',
+          '.selectbox-item.focus, .settings-folder.focus, .settings-param.focus { background: linear-gradient(to right, #43cea2, #185a9d) !important; color: #fff !important; box-shadow: 0 0 0.4em rgba(67, 206, 162, 0.4) !important; border-radius: 0.5em 0 0 0.5em !important; }',
+          '.modal__content, .settings__content, .settings-input__content, .selectbox__content, .settings-input { background: rgba(26, 42, 58, 0.98) !important; border: 1px solid rgba(67, 206, 162, 0.1) !important; box-shadow: 0 0 0.4em rgba(67, 206, 162, 0.1) !important; }',
+          '.full-start__background.loaded { opacity: 0.85 !important; }',
+          '.full-start__background.dim { opacity: 0.2 !important; }',
+          '.full-start-new__img, .full-start-new__poster .full--poster { -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,.98) 58%, rgba(0,0,0,.82) 72%, rgba(0,0,0,.50) 84%, rgba(0,0,0,.18) 93%, rgba(0,0,0,0) 100%); mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,.98) 58%, rgba(0,0,0,.82) 72%, rgba(0,0,0,.50) 84%, rgba(0,0,0,.18) 93%, rgba(0,0,0,0) 100%); }',
+          '.full-start-new__head, .full-start-new__title, .full-start__title-original, .full-start__rate, .full-start-new__reactions, .full-start-new__rate-line, .full-start-new__buttons, .full-start-new__details, .full-start-new__tagline { justify-content: center !important; text-align: center !important; max-width: 100% !important; }',
+          '.full-start-new__logo { width: 100% !important; display: flex !important; justify-content: center !important; align-items: center !important; margin: 0 auto 0.25em !important; text-align: center !important; }',
+          '.full-start-new__logo img { margin: 0 auto !important; display: block !important; max-width: min(86vw, 20em) !important; object-fit: contain !important; }',
+          '.full-start-new__title, .full-start__title-original { display: none !important; }',
+          '.full-start-new__right { position: relative !important; background: linear-gradient(to bottom, rgba(255,255,255,0.05) 0%, rgba(24,26,31,0.20) 18%, rgba(16,18,22,0.58) 52%, rgba(10,11,14,0.32) 72%, rgba(10,11,14,0.10) 86%, rgba(10,11,14,0.00) 100%) !important; margin-top: -2.8em !important; padding-top: 2.6em !important; padding-bottom: 3.2em !important; border-radius: 1.35em 1.35em 0 0 !important; backdrop-filter: blur(22px) saturate(1.08) !important; -webkit-backdrop-filter: blur(22px) saturate(1.08) !important; border-top: 1px solid rgba(255,255,255,0.10) !important; box-shadow: inset 0 1px 0 rgba(255,255,255,0.08), 0 -8px 28px rgba(0,0,0,0.26) !important; }',
+          '.full-start-new__right::before { content: ""; position: absolute; left: 0; right: 0; top: -3.8em; height: 5em; pointer-events: none; background: linear-gradient(to bottom, rgba(255,255,255,0.015) 0%, rgba(255,255,255,0.04) 18%, rgba(16,18,22,0.20) 42%, rgba(12,13,17,0.82) 100%); filter: blur(14px); }',
+          '.full-start-new__right > * { position: relative; z-index: 2; }',
+          '.full-start-new__right { overflow: visible !important; }',
+          '.full-start-new__right::after { content: ""; position: absolute; left: -1.2em; right: -1.2em; bottom: -7.8em; height: 12.5em; pointer-events: none; border-radius: 0 0 2.6em 2.6em; background: linear-gradient(to bottom, rgba(16,18,22,0.30) 0%, rgba(16,18,22,0.18) 20%, rgba(16,18,22,0.10) 42%, rgba(16,18,22,0.045) 66%, rgba(16,18,22,0.012) 84%, rgba(16,18,22,0) 100%); filter: blur(42px); opacity: 1; }',
+          '.full-start-new__right .lampac-glass-fade { display:none !important; }',
+          '.full-start-new__right::before { border-radius: inherit; }',
+          '.full-start-new__right > .full-start-new__buttons:last-child::after, .full-start-new__right::selection { background: transparent; }',
+          '.full-start-new__buttons .full-start__button:not(.focus) span { display: inline; }',
+          '.full-start-new__head { margin-top: 0.15em !important; }',
+          '.full-start-new__details, .full-start-new__rate-line, .full-start-new__reactions, .full-start-new__buttons { position: relative !important; z-index: 2 !important; }',
+          '.full-start-new__reactions, .full-start-new__buttons { background: transparent !important; box-shadow: none !important; border: none !important; backdrop-filter: none !important; -webkit-backdrop-filter: none !important; }',
+          '.full-start-new__reactions > *, .full-start__reactions > * { background: transparent !important; border: none !important; box-shadow: none !important; }',
+          '.full-start-new__buttons .full-start__button, .full-start-new__buttons .full-start-new__button, .full-start-new__buttons .selector, .full-start__buttons .full-start__button, .full-start__buttons .full-start-new__button, .full-start__buttons .selector { background: rgba(12,13,17,0.44) !important; border: 1px solid rgba(255,255,255,0.07) !important; box-shadow: none !important; }',
+          '@media screen and (max-width: 580px) { .full-start-new__buttons, .full-start__buttons { overflow: visible !important; overflow-x: visible !important; -webkit-overflow-scrolling: auto !important; flex-wrap: wrap !important; justify-content: center !important; row-gap: 0.55em !important; } .full-start-new__buttons .full-start__button:not(.focus) span, .full-start__buttons .full-start__button:not(.focus) span { display: none !important; } }',
+          '.card__title { height: 3.6em !important; text-overflow: ellipsis !important; -webkit-line-clamp: 3; line-clamp: 3; }',
+          '.card__age { position: absolute !important; right: 0em !important; bottom: 0em !important; z-index: 10 !important; background: rgba(0, 0, 0, 0.6) !important; color: #ffffff !important; font-weight: 700 !important; padding: 0.4em 0.6em !important; border-radius: 0.48em 0 0.48em 0 !important; line-height: 1.0 !important; font-size: 1.0em !important; }',
+          '.card__vote { position: absolute !important; bottom: auto !important; right: 0em !important; top: 0em !important; background: rgba(0, 0, 0, 0.6) !important; font-weight: 700 !important; color: #fff !important; border-radius: 0 0.34em 0 0.34em !important; line-height: 1.0 !important; font-size: 1.15em !important; }',
+          '.card--tv .card__type, .card__type { font-size: 1em !important; background: transparent !important; color: transparent !important; left: 0 !important; top: 0 !important; }',
+          '.card__type::after { display: none !important; }',
+          '.card__icons { position: absolute !important; top: 2em !important; left: 0 !important; right: auto !important; display: flex !important; justify-content: center !important; background: rgba(0, 0, 0, 0.6) !important; color: #fff !important; border-radius: 0 0.5em 0.5em 0 !important; }',
+          '.card__icons-inner { background: rgba(0, 0, 0, 0) !important; }',
+          '.card__marker { position: absolute !important; left: 0em !important; top: 4em !important; bottom: auto !important; background: rgba(0, 0, 0, 0.6) !important; border-radius: 0 0.5em 0.5em 0 !important; font-weight: 700 !important; font-size: 1.0em !important; padding: 0.4em 0.6em !important; display: flex !important; align-items: center !important; line-height: 1.2 !important; max-width: min(12em, 95%) !important; box-sizing: border-box !important; }',
+          '.card__quality { position: absolute !important; left: auto !important; right: 0em !important; bottom: 2.4em !important; padding: 0.28em 0.45em !important; color: #fff !important; font-weight: 700 !important; font-size: 0.82em !important; line-height: 1 !important; border-radius: 0.42em 0 0 0.42em !important; text-transform: uppercase !important; background: rgba(12,13,17,0.82) !important; border: 1px solid rgba(255,255,255,0.08) !important; }',
+          '.explorer__files .torrent-filter .simple-button { font-size: 1.2em !important; border-radius: 0.5em !important; }',
+          '.full-review-add, .full-review, .extensions__item, .extensions__block-add, .search-source, .bookmarks-folder__layer, .bookmarks-folder__body, .card__img, .card__promo, .full-episode--next .full-episode__img:after, .full-episode__img img, .full-episode__body, .full-person__photo, .card-more__box, .full-start__button, .simple-button, .register { border-radius: 0.5em !important; }',
+          '.extensions__item.focus::after, .extensions__block-add.focus::after, .full-episode.focus::after, .full-review-add.focus::after, .card-parser.focus::after, .card-episode.focus .full-episode::after, .card-episode.hover .full-episode::after, .card.focus .card__view::after, .card.hover .card__view::after, .card-more.focus .card-more__box::after, .register.focus::after { border-radius: 1em !important; border: 0.24em solid #5cd4b0 !important; box-shadow: 0 0 0.6em rgba(92, 212, 176, 0.18) !important; }',
+          '@media (orientation: landscape) and (max-height: 500px) { .navigation-bar { position: fixed !important; bottom: 0 !important; left: 0 !important; right: 0 !important; top: auto !important; z-index: 999 !important; } .navigation-bar__body { flex-direction: row !important; height: auto !important; width: 100% !important; padding: 0.3em 0 !important; gap: 0.2em !important; } .navigation-bar__item { flex: 1 !important; } .navigation-bar__item-icon { width: 1.3em !important; height: 1.3em !important; } .navigation-bar__item-text { font-size: 0.6em !important; } .wrap { padding-right: 0 !important; } .wrap__content { width: 100% !important; } body { padding-bottom: 3.5em !important; } }',
+          '@media (orientation: landscape) and (max-height: 500px) { .full-start-new { min-height: 100vh !important; } .full-start-new__title { font-size: 2.2em !important; } .full-start-new__right { max-width: 55% !important; } .cinema-descr { -webkit-line-clamp: 2 !important; } }'
+        ].join('\n');
+        document.head.appendChild(clone);
+      }
+
+      Lampa.Storage.set('background_type', 'simple');
+      Lampa.Storage.set('card_interfice_type', 'new');
+      Lampa.Storage.set('glass_style', 'false');
+      Lampa.Storage.set('card_interfice_cover', 'true');
+      Lampa.Storage.set('advanced_animation', 'false');
+    }
+
     function registerInterface1MobileTemplate() {
       if (getDeviceType() !== 'mobile') return;
-      if (Lampa.Storage.get('lampac_screen_mobile_style', 'interface1') !== 'interface1') return;
       if (!(window.Lampa && Lampa.Template && Lampa.Template.add)) return;
-
-      Lampa.Template.add('full_start_new', '<div class="full-start-new">\n\n<div class="full-start-new__body">\n<div class="full-start-new__left">\n<div class="full-start-new__poster">\n<img class="full-start-new__img full--poster" />\n</div>\n</div>\n\n<div class="full-start-new__right">\n<div class="full-start-new__head"></div>\n<div class="full-start-new__title">{title}</div>\n<div class="full-start-new__tagline full--tagline">{tagline}</div>\n<div class="full-start-new__rate-line">\n<div class="full-start__rate rate--tmdb"><div>{rating}</div><div class="source--name">TMDB</div></div>\n<div class="full-start__rate rate--imdb hide"><div></div><div class="source--name">IMDb</div></div>\n<div class="full-start__rate rate--kp hide"><div></div><div class="source--name">КП</div></div>\n\n<div class="full-start__pg hide"></div>\n<div class="full-start__status hide"></div>\n</div>\n<div class="full-start-new__details"></div>\n<div class="full-start-new__reactions">\n<div>#{reactions_none}</div>\n</div>\n\n<div class="full-start-new__buttons">\n<div class="full-start__button selector button--play">\n<svg width="28" height="29" viewBox="0 0 28 29" fill="none" xmlns="http://www.w3.org/2000/svg">\n<circle cx="14" cy="14.5" r="13" stroke="currentColor" stroke-width="2.7"/>\n<path d="M18.0739 13.634C18.7406 14.0189 18.7406 14.9811 18.0739 15.366L11.751 19.0166C11.0843 19.4015 10.251 18.9204 10.251 18.1506L10.251 10.8494C10.251 10.0796 11.0843 9.5985 11.751 9.9834L18.0739 13.634Z" fill="currentColor"/>\n</svg>\n\n<span>#{title_watch}</span>\n</div>\n\n<div class="full-start__button selector view--torrent">\n<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 50 50" width="50px" height="50px">\n<path d="M25,2C12.317,2,2,12.317,2,25s10.317,23,23,23s23-10.317,23-23S37.683,2,25,2z M40.5,30.963c-3.1,0-4.9-2.4-4.9-2.4 S34.1,35,27,35c-1.4,0-3.6-0.837-3.6-0.837l4.17,9.643C26.727,43.92,25.874,44,25,44c-2.157,0-4.222-0.377-6.155-1.039L9.237,16.851 c0,0-0.7-1.2,0.4-1.5c1.1-0.3,5.4-1.2,5.4-1.2s1.475-0.494,1.8,0.5c0.5,1.3,4.063,11.112,4.063,11.112S22.6,29,27.4,29 c4.7,0,5.9-3.437,5.7-3.937c-1.2-3-4.993-11.862-4.993-11.862s-0.6-1.1,0.8-1.4c1.4-0.3,3.8-0.7,3.8-0.7s1.105-0.163,1.6,0.8 c0.738,1.437,5.193,11.262,5.193,11.262s1.1,2.9,3.3,2.9c0.464,0,0.834-0.046,1.152-0.104c-0.082,1.635-0.348,3.221-0.817,4.722 C42.541,30.867,41.756,30.963,40.5,30.963z" fill="currentColor"/>\n</svg>\n\n<span>#{full_torrents}</span>\n</div>\n\n<div class="full-start__button selector view--trailer">\n<svg height="70" viewBox="0 0 80 70" fill="none" xmlns="http://www.w3.org/2000/svg">\n<path fill-rule="evenodd" clip-rule="evenodd" d="M71.2555 2.08955C74.6975 3.2397 77.4083 6.62804 78.3283 10.9306C80 18.7291 80 35 80 35C80 35 80 51.2709 78.3283 59.0694C77.4083 63.372 74.6975 66.7603 71.2555 67.9104C65.0167 70 40 70 40 70C40 70 14.9833 70 8.74453 67.9104C5.3025 66.7603 2.59172 63.372 1.67172 59.0694C0 51.2709 0 35 0 35C0 35 0 18.7291 1.67172 10.9306C2.59172 6.62804 5.3025 3.2395 8.74453 2.08955C14.9833 0 40 0 40 0C40 0 65.0167 0 71.2555 2.08955ZM55.5909 35.0004L29.9773 49.5714V20.4286L55.5909 35.0004Z" fill="currentColor"></path>\n</svg>\n\n<span>#{full_trailers}</span>\n</div>\n<div class="full-start__button selector button--book">\n<svg width="21" height="32" viewBox="0 0 21 32" fill="none" xmlns="http://www.w3.org/2000/svg">\n<path d="M2 1.5H19C19.2761 1.5 19.5 1.72386 19.5 2V27.9618C19.5 28.3756 19.0261 28.6103 18.697 28.3595L12.6212 23.7303C11.3682 22.7757 9.63183 22.7757 8.37885 23.7303L2.30302 28.3595C1.9739 28.6103 1.5 28.3756 1.5 27.9618V2C1.5 1.72386 1.72386 1.5 2 1.5Z" stroke="currentColor" stroke-width="2.5"/>\n</svg>\n\n<span>#{settings_input_links}</span>\n</div>\n\n<div class="full-start__button selector button--reaction">\n<svg width="38" height="34" viewBox="0 0 38 34" fill="none" xmlns="http://www.w3.org/2000/svg">\n<path d="M37.208 10.9742C37.1364 10.8013 37.0314 10.6441 36.899 10.5117C36.7666 10.3794 36.6095 10.2744 36.4365 10.2028L12.0658 0.108375C11.7166 -0.0361828 11.3242 -0.0361227 10.9749 0.108542C10.6257 0.253206 10.3482 0.530634 10.2034 0.879836L0.108666 25.2507C0.0369593 25.4236 3.37953e-05 25.609 2.3187e-08 25.7962C-3.37489e-05 25.9834 0.0368249 26.1688 0.108469 26.3418C0.180114 26.5147 0.28514 26.6719 0.417545 26.8042C0.54995 26.9366 0.707139 27.0416 0.880127 27.1131L17.2452 33.8917C17.5945 34.0361 17.9869 34.0361 18.3362 33.8917L29.6574 29.2017C29.8304 29.1301 29.9875 29.0251 30.1199 28.8928C30.2523 28.7604 30.3573 28.6032 30.4289 28.4303L37.2078 12.065C37.2795 11.8921 37.3164 11.7068 37.3164 11.5196C37.3165 11.3325 37.2796 11.1471 37.208 10.9742ZM20.425 29.9407L21.8784 26.4316L25.3873 27.885L20.425 29.9407ZM28.3407 26.0222L21.6524 23.252C21.3031 23.1075 20.9107 23.1076 20.5615 23.2523C20.2123 23.3969 19.9348 23.6743 19.79 24.0235L17.0194 30.7123L3.28783 25.0247L12.2918 3.28773L34.0286 12.2912L28.3407 26.0222Z" fill="currentColor"/>\n<path d="M25.3493 16.976L24.258 14.3423L16.959 17.3666L15.7196 14.375L13.0859 15.4659L15.4161 21.0916L25.3493 16.976Z" fill="currentColor"/>\n</svg>                \n\n<span>#{title_reactions}</span>\n</div>\n\n<div class="full-start__button selector button--subscribe hide">\n<svg width="25" height="30" viewBox="0 0 25 30" fill="none" xmlns="http://www.w3.org/2000/svg">\n<path d="M6.01892 24C6.27423 27.3562 9.07836 30 12.5 30C15.9216 30 18.7257 27.3562 18.981 24H15.9645C15.7219 25.6961 14.2632 27 12.5 27C10.7367 27 9.27804 25.6961 9.03542 24H6.01892Z" fill="currentColor"/>\n<path d="M3.81972 14.5957V10.2679C3.81972 5.41336 7.7181 1.5 12.5 1.5C17.2819 1.5 21.1803 5.41336 21.1803 10.2679V14.5957C21.1803 15.8462 21.5399 17.0709 22.2168 18.1213L23.0727 19.4494C24.2077 21.2106 22.9392 23.5 20.9098 23.5H4.09021C2.06084 23.5 0.792282 21.2106 1.9273 19.4494L2.78317 18.1213C3.46012 17.0709 3.81972 15.8462 3.81972 14.5957Z" stroke="currentColor" stroke-width="2.5"/>\n</svg>\n\n<span>#{title_subscribe}</span>\n</div>\n\n<div class="full-start__button selector button--options">\n<svg width="38" height="10" viewBox="0 0 38 10" fill="none" xmlns="http://www.w3.org/2000/svg">\n<circle cx="4.88968" cy="4.98563" r="4.75394" fill="currentColor"/>\n<circle cx="18.9746" cy="4.98563" r="4.75394" fill="currentColor"/>\n<circle cx="33.0596" cy="4.98563" r="4.75394" fill="currentColor"/>\n</svg>\n</div>\n\n</div>\n</div>\n</div>');
+      Lampa.Template.add('card', '<div class="card selector layer--visible layer--render">\n    <div class="card__view">\n        <img src="./img/img_load.svg" class="card__img" />\n\n        <div class="card__icons">\n            <div class="card__icons-inner">\n                \n            </div>\n        </div>\n    <div class="card__age">{release_year}</div>\n    </div>\n\n    <div class="card__title">{title}</div>\n    </div>');
+      Lampa.Template.add('card_episode', '<div class="card-episode selector layer--visible layer--render">\n    <div class="card-episode__body">\n        <div class="full-episode">\n            <div class="full-episode__img">\n                <img />\n            </div>\n\n            <div class="full-episode__body">\n     <div class="card__title">{title}</div>\n            <div class="card__age">{release_year}</div>\n            <div class="full-episode__num hide">{num}</div>\n                <div class="full-episode__name">{name}</div>\n                <div class="full-episode__date">{date}</div>\n            </div>\n        </div>\n    </div>\n    <div class="card-episode__footer hide">\n        <div class="card__imgbox">\n            <div class="card__view">\n                <img class="card__img" />\n            </div>\n        </div>\n\n        <div class="card__left">\n            <div class="card__title">{title}</div>\n            <div class="card__age">{release_year}</div>\n        </div>\n    </div>\n</div>');
+      Lampa.Template.add('full_start_new', '<div class="full-start-new">\n\n<div class="full-start-new__body">\n<div class="full-start-new__left">\n<div class="full-start-new__poster">\n<img class="full-start-new__img full--poster" />\n</div>\n</div>\n\n<div class="full-start-new__right">\n<div class="full-start-new__head"></div>\n<div class="full-start-new__title">{title}</div>\n<div class="full-start__title-original">{original_title}</div>\n<div class="full-start-new__tagline full--tagline">{tagline}</div>\n<div class="full-start-new__rate-line">\n<div class="full-start__rate rate--tmdb"><div>{rating}</div><div class="source--name">TMDB</div></div>\n<div class="full-start__rate rate--imdb hide"><div></div><div class="source--name">IMDb</div></div>\n<div class="full-start__rate rate--kp hide"><div></div><div class="source--name">КП</div></div>\n\n<div class="full-start__pg hide"></div>\n<div class="full-start__status hide"></div>\n</div>\n<div class="full-start-new__details"></div>\n<div class="full-start-new__reactions">\n<div>#{reactions_none}</div>\n</div>\n\n<div class="full-start-new__buttons">\n<div class="full-start__button selector button--play">\n<svg width="28" height="29" viewBox="0 0 28 29" fill="none" xmlns="http://www.w3.org/2000/svg">\n<circle cx="14" cy="14.5" r="13" stroke="currentColor" stroke-width="2.7"/>\n<path d="M18.0739 13.634C18.7406 14.0189 18.7406 14.9811 18.0739 15.366L11.751 19.0166C11.0843 19.4015 10.251 18.9204 10.251 18.1506L10.251 10.8494C10.251 10.0796 11.0843 9.5985 11.751 9.9834L18.0739 13.634Z" fill="currentColor"/>\n</svg>\n\n<span>#{title_watch}</span>\n</div>\n\n<div class="full-start__button view--torrent">\n<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 50 50" width="50px" height="50px">\n<path d="M25,2C12.317,2,2,12.317,2,25s10.317,23,23,23s23-10.317,23-23S37.683,2,25,2z M40.5,30.963c-3.1,0-4.9-2.4-4.9-2.4 S34.1,35,27,35c-1.4,0-3.6-0.837-3.6-0.837l4.17,9.643C26.727,43.92,25.874,44,25,44c-2.157,0-4.222-0.377-6.155-1.039L9.237,16.851 c0,0-0.7-1.2,0.4-1.5c1.1-0.3,5.4-1.2,5.4-1.2s1.475-0.494,1.8,0.5c0.5,1.3,4.063,11.112,4.063,11.112S22.6,29,27.4,29 c4.7,0,5.9-3.437,5.7-3.937c-1.2-3-4.993-11.862-4.993-11.862s-0.6-1.1,0.8-1.4c1.4-0.3,3.8-0.7,3.8-0.7s1.105-0.163,1.6,0.8 c0.738,1.437,5.193,11.262,5.193,11.262s1.1,2.9,3.3,2.9c0.464,0,0.834-0.046,1.152-0.104c-0.082,1.635-0.348,3.221-0.817,4.722 C42.541,30.867,41.756,30.963,40.5,30.963z" fill="currentColor"/>\n</svg>\n\n<span>#{full_torrents}</span>\n</div>\n\n<div class="full-start__button selector view--trailer">\n<svg height="70" viewBox="0 0 80 70" fill="none" xmlns="http://www.w3.org/2000/svg">\n<path fill-rule="evenodd" clip-rule="evenodd" d="M71.2555 2.08955C74.6975 3.2397 77.4083 6.62804 78.3283 10.9306C80 18.7291 80 35 80 35C80 35 80 51.2709 78.3283 59.0694C77.4083 63.372 74.6975 66.7603 71.2555 67.9104C65.0167 70 40 70 40 70C40 70 14.9833 70 8.74453 67.9104C5.3025 66.7603 2.59172 63.372 1.67172 59.0694C0 51.2709 0 35 0 35C0 35 0 18.7291 1.67172 10.9306C2.59172 6.62804 5.3025 3.2395 8.74453 2.08955C14.9833 0 40 0 40 0C40 0 65.0167 0 71.2555 2.08955ZM55.5909 35.0004L29.9773 49.5714V20.4286L55.5909 35.0004Z" fill="currentColor"></path>\n</svg>\n\n<span>#{full_trailers}</span>\n</div>\n<div class="full-start__button selector button--book">\n<svg width="21" height="32" viewBox="0 0 21 32" fill="none" xmlns="http://www.w3.org/2000/svg">\n<path d="M2 1.5H19C19.2761 1.5 19.5 1.72386 19.5 2V27.9618C19.5 28.3756 19.0261 28.6103 18.697 28.3595L12.6212 23.7303C11.3682 22.7757 9.63183 22.7757 8.37885 23.7303L2.30302 28.3595C1.9739 28.6103 1.5 28.3756 1.5 27.9618V2C1.5 1.72386 1.72386 1.5 2 1.5Z" stroke="currentColor" stroke-width="2.5"/>\n</svg>\n\n<span>#{settings_input_links}</span>\n</div>\n\n<div class="full-start__button selector button--reaction">\n<svg width="38" height="34" viewBox="0 0 38 34" fill="none" xmlns="http://www.w3.org/2000/svg">\n<path d="M37.208 10.9742C37.1364 10.8013 37.0314 10.6441 36.899 10.5117C36.7666 10.3794 36.6095 10.2744 36.4365 10.2028L12.0658 0.108375C11.7166 -0.0361828 11.3242 -0.0361227 10.9749 0.108542C10.6257 0.253206 10.3482 0.530634 10.2034 0.879836L0.108666 25.2507C0.0369593 25.4236 3.37953e-05 25.609 2.3187e-08 25.7962C-3.37489e-05 25.9834 0.0368249 26.1688 0.108469 26.3418C0.180114 26.5147 0.28514 26.6719 0.417545 26.8042C0.54995 26.9366 0.707139 27.0416 0.880127 27.1131L17.2452 33.8917C17.5945 34.0361 17.9869 34.0361 18.3362 33.8917L29.6574 29.2017C29.8304 29.1301 29.9875 29.0251 30.1199 28.8928C30.2523 28.7604 30.3573 28.6032 30.4289 28.4303L37.2078 12.065C37.2795 11.8921 37.3164 11.7068 37.3164 11.5196C37.3165 11.3325 37.2796 11.1471 37.208 10.9742ZM20.425 29.9407L21.8784 26.4316L25.3873 27.885L20.425 29.9407ZM28.3407 26.0222L21.6524 23.252C21.3031 23.1075 20.9107 23.1076 20.5615 23.2523C20.2123 23.3969 19.9348 23.6743 19.79 24.0235L17.0194 30.7123L3.28783 25.0247L12.2918 3.28773L34.0286 12.2912L28.3407 26.0222Z" fill="currentColor"/>\n<path d="M25.3493 16.976L24.258 14.3423L16.959 17.3666L15.7196 14.375L13.0859 15.4659L15.4161 21.0916L25.3493 16.976Z" fill="currentColor"/>\n</svg>                \n\n<span>#{title_reactions}</span>\n</div>\n\n<div class="full-start__button selector button--subscribe hide">\n<svg width="25" height="30" viewBox="0 0 25 30" fill="none" xmlns="http://www.w3.org/2000/svg">\n<path d="M6.01892 24C6.27423 27.3562 9.07836 30 12.5 30C15.9216 30 18.7257 27.3562 18.981 24H15.9645C15.7219 25.6961 14.2632 27 12.5 27C10.7367 27 9.27804 25.6961 9.03542 24H6.01892Z" fill="currentColor"/>\n<path d="M3.81972 14.5957V10.2679C3.81972 5.41336 7.7181 1.5 12.5 1.5C17.2819 1.5 21.1803 5.41336 21.1803 10.2679V14.5957C21.1803 15.8462 21.5399 17.0709 22.2168 18.1213L23.0727 19.4494C24.2077 21.2106 22.9392 23.5 20.9098 23.5H4.09021C2.06084 23.5 0.792282 21.2106 1.9273 19.4494L2.78317 18.1213C3.46012 17.0709 3.81972 15.8462 3.81972 14.5957Z" stroke="currentColor" stroke-width="2.5"/>\n</svg>\n\n<span>#{title_subscribe}</span>\n</div>\n\n<div class="full-start__button selector button--options">\n<svg width="38" height="10" viewBox="0 0 38 10" fill="none" xmlns="http://www.w3.org/2000/svg">\n<circle cx="4.88968" cy="4.98563" r="4.75394" fill="currentColor"/>\n<circle cx="18.9746" cy="4.98563" r="4.75394" fill="currentColor"/>\n<circle cx="33.0596" cy="4.98563" r="4.75394" fill="currentColor"/>\n</svg>\n</div>\n\n</div>\n</div>\n</div>');
+      applyInterface1MobileClone();
     }
 
     function normalizeFullButtonSelectors(root) {
@@ -1543,7 +1626,6 @@
             'Meta line: ' + Lampa.Storage.get('lampac_screen_compact_meta', 'off'),
             'Порядок кнопок: ' + Lampa.Storage.get('lampac_screen_button_order', 'online,torrent,trailer,book'),
             'Скрыть лишние: ' + Lampa.Storage.get('lampac_screen_hide_extra_buttons', 'off'),
-            'Кнопка-папка: ' + Lampa.Storage.get('lampac_screen_buttons_folder', 'off'),
             'Легковесный режим: ' + Lampa.Storage.get('lampac_screen_tv_mode', 'off'),
             'Затемнение: ' + Lampa.Storage.get('lampac_screen_bg_dim', 'none'),
             'Профили устройств: ' + Lampa.Storage.get('lampac_screen_device_profiles', 'off'),
@@ -1679,7 +1761,7 @@
           lampac_screen_button_order: 'online,torrent,trailer,book',
           lampac_screen_hide_extra_buttons: 'off',
           lampac_screen_smart_order: 'on',
-          lampac_screen_title_logo: 'show',
+          lampac_screen_title_logo: 'hide',
           lampac_screen_logo_size: 'small',
           lampac_screen_logo_us: 'hide',
           lampac_screen_tv_mode: 'off',
@@ -1691,11 +1773,10 @@
           lampac_screen_tagline: 'show',
           lampac_screen_descr: 'show',
           lampac_screen_overlay_opacity: '86',
-          lampac_screen_buttons_folder: 'off',
           lampac_screen_cinema_descr_size: 'medium',
           lampac_card_style: 'default',
           lampac_card_density: 'balance',
-          lampac_card_focus_scale: 'normal',
+          lampac_card_focus_scale: 'off',
           lampac_card_radius: 'medium',
           lampac_card_quality: 'show',
           lampac_card_vote: 'show',
@@ -1733,11 +1814,10 @@
           lampac_screen_tagline: 'show',
           lampac_screen_descr: 'show',
           lampac_screen_overlay_opacity: '86',
-          lampac_screen_buttons_folder: 'off',
           lampac_screen_cinema_descr_size: 'medium',
           lampac_card_style: 'default',
           lampac_card_density: 'balance',
-          lampac_card_focus_scale: 'soft',
+          lampac_card_focus_scale: 'off',
           lampac_card_radius: 'medium',
           lampac_card_quality: 'show',
           lampac_card_vote: 'show',
@@ -1774,7 +1854,6 @@
           lampac_screen_tagline: 'show',
           lampac_screen_descr: 'show',
           lampac_screen_overlay_opacity: '94',
-          lampac_screen_buttons_folder: 'off',
           lampac_screen_cinema_descr_size: 'medium',
           lampac_card_style: 'default',
           lampac_card_density: 'balance',
@@ -1817,7 +1896,6 @@
           lampac_screen_descr: 'show',
           lampac_screen_overlay_opacity: '90',
           lampac_screen_auto_contrast: 'off',
-          lampac_screen_buttons_folder: 'off',
           lampac_screen_cinema_descr_size: 'medium',
           lampac_card_style: 'default',
           lampac_card_density: 'balance',
@@ -1857,11 +1935,10 @@
           lampac_screen_tagline: 'hide',
           lampac_screen_descr: 'show',
           lampac_screen_overlay_opacity: '82',
-          lampac_screen_buttons_folder: 'off',
           lampac_screen_cinema_descr_size: 'medium',
           lampac_card_style: 'clean',
           lampac_card_density: 'compact',
-          lampac_card_focus_scale: 'normal',
+          lampac_card_focus_scale: 'off',
           lampac_card_radius: 'small',
           lampac_card_quality: 'hide',
           lampac_card_vote: 'hide',
@@ -1882,8 +1959,7 @@
           'lampac_screen_button_size_desktop',
           'lampac_screen_button_order',
           'lampac_screen_hide_extra_buttons',
-          'lampac_screen_smart_order',
-          'lampac_screen_buttons_folder'
+          'lampac_screen_smart_order'
         ].forEach(function (k) {
           if (Object.prototype.hasOwnProperty.call(map, k)) Lampa.Storage.set(k, map[k]);
         });
@@ -1896,11 +1972,7 @@
       applyScreenStyle();
       setTimeout(function(){
         try {
-          if (window.AlcopacTheme && AlcopacTheme.full && typeof AlcopacTheme.full.reorderSafe === 'function') {
-            AlcopacTheme.full.reorderSafe();
-          } else {
-            promoteFolderButtons(true);
-          }
+          /* full-screen buttons reorder disabled to keep native Lampa focus flow */
         } catch(e){}
       }, 80);
     }
@@ -1970,7 +2042,6 @@
             'lampac_screen_tagline',
             'lampac_screen_descr',
             'lampac_screen_overlay_opacity',
-            'lampac_screen_buttons_folder',
             'lampac_card_style',
             'lampac_card_density',
             'lampac_card_focus_scale',
@@ -2383,6 +2454,19 @@
     // ═══════════════════════════════════════════════════════
     var CARD_STYLE_ID = 'lampac-card-display-style';
 
+    function normalizeCardYearPlacement(scope) {
+      try {
+        var root = scope && scope.querySelectorAll ? scope : document;
+        var cards = root.querySelectorAll('.card');
+        cards.forEach(function(card){
+          var age = card.querySelector('.card__age');
+          var view = card.querySelector('.card__view');
+          if (!age || !view) return;
+          if (age.parentNode !== view) view.appendChild(age);
+        });
+      } catch (e) {}
+    }
+
     function applyCardDisplay() {
       var existing = document.getElementById(CARD_STYLE_ID);
       if (existing) existing.parentNode.removeChild(existing);
@@ -2401,9 +2485,11 @@
       if (Lampa.Storage.get('lampac_card_year', 'show') === 'hide') {
         rules.push('.card__age { display: none !important; }');
       } else if (Lampa.Storage.get('lampac_card_year', 'show') === 'focus') {
-        rules.push('.card__age { opacity: 0; max-height: 0; overflow: hidden; transition: .18s ease; }');
-        rules.push('.card.focus .card__age, .card.hover .card__age, .card.traverse .card__age { opacity: 1; max-height: 2em; }');
+        rules.push('.card__age { opacity: 0; visibility: hidden; transition: .18s ease; }');
+        rules.push('.card.focus .card__age, .card.hover .card__age, .card.traverse .card__age { opacity: 1; visibility: visible; }');
       }
+      rules.push('.card, .card__view { position: relative !important; }');
+      rules.push('.card__age { position: absolute !important; right: 0 !important; bottom: 0 !important; z-index: 10 !important; margin: 0 !important; background: rgba(0, 0, 0, 0.62) !important; color: #fff !important; font-weight: 700 !important; padding: 0.38em 0.58em !important; border-radius: 0.48em 0 0.48em 0 !important; line-height: 1 !important; font-size: 1em !important; pointer-events: none !important; }');
 
       // Card corner radius
       var radiusMap = { small: '0.4em', medium: '1em', large: '1.6em', round: '2.2em' };
@@ -2431,9 +2517,15 @@
       }
 
       // Focus scale
-      var focusScaleMap = { soft: '1.03', normal: '1.06', strong: '1.09', xstrong: '1.12' };
-      var focusScale = focusScaleMap[Lampa.Storage.get('lampac_card_focus_scale', 'normal')] || '1.06';
-      rules.push('.card.focus .card__view { transform: scale(' + focusScale + ') !important; transition: transform .22s ease, box-shadow .22s ease; }');
+      var focusScaleMode = Lampa.Storage.get('lampac_card_focus_scale', 'normal');
+      var focusScaleMap = { off: '1', soft: '1.03', normal: '1.06', strong: '1.09', xstrong: '1.12' };
+      var focusScale = focusScaleMap[focusScaleMode] || '1.06';
+      if (focusScaleMode === 'off') {
+        rules.push('.card.focus .card__view, .card.hover .card__view, .card.traverse .card__view { transform: none !important; transition: none !important; }');
+        rules.push('.card.focus, .card.hover, .card.traverse { transition: none !important; }');
+      } else {
+        rules.push('.card.focus .card__view { transform: scale(' + focusScale + ') !important; transition: transform .22s ease, box-shadow .22s ease; }');
+      }
 
       // Vote badge style
       var voteStyle = Lampa.Storage.get('lampac_card_vote_style', 'default');
@@ -2668,10 +2760,10 @@
       param: {
         name: 'lampac_card_focus_scale',
         type: 'select',
-        values: { soft: 'Мягкий', normal: 'Нормальный', strong: 'Сильный', xstrong: 'Очень сильный' },
+        values: { off: 'Выключено', soft: 'Мягкий', normal: 'Нормальный', strong: 'Сильный', xstrong: 'Очень сильный' },
         default: 'normal',
       },
-      field: { name: 'Увеличение при фокусе', description: 'Плавное увеличение карточки при наведении/фокусе' },
+      field: { name: 'Увеличение при фокусе', description: 'Увеличение карточки при наведении/фокусе' },
       onChange: applyCardDisplay,
     });
 
@@ -2683,7 +2775,7 @@
         values: { show: 'Показывать', focus: 'Только при фокусе', hide: 'Скрыть' },
         default: 'show',
       },
-      field: { name: 'Год выхода', description: 'Год под названием' },
+      field: { name: 'Год выхода', description: 'Год на постере' },
       onChange: applyCardDisplay,
     });
 
@@ -2722,6 +2814,7 @@
     })();
 
     function applyScreenStyle() {
+      if (getDeviceType() === 'mobile') { applyInterface1MobileClone(); return; }
       var existing = document.getElementById(SCREEN_STYLE_ID);
       if (existing) existing.parentNode.removeChild(existing);
 
@@ -3074,6 +3167,12 @@
         '}');
       rules.push('.full-start-new__buttons .full-start__button > span, .full-start-new__buttons .full-start-new__button > span, .full-start-new__buttons .selector > span, .full-start__buttons .full-start__button > span, .full-start__buttons .full-start-new__button > span, .full-start__buttons .selector > span {' +
         '  font-size: var(--lampac-btn-font, 0.85em) !important; line-height: 1 !important;' +
+        '  display: inline-block !important; overflow: hidden !important; white-space: nowrap !important;' +
+        '  max-width: 0 !important; opacity: 0 !important; margin-left: 0 !important;' +
+        '  transition: none !important;' +
+        '}');
+      rules.push('.full-start-new__buttons .full-start__button.focus > span, .full-start-new__buttons .full-start-new__button.focus > span, .full-start-new__buttons .selector.focus > span, .full-start-new__buttons .full-start__button.hover > span, .full-start-new__buttons .full-start-new__button.hover > span, .full-start-new__buttons .selector.hover > span, .full-start__buttons .full-start__button.focus > span, .full-start__buttons .full-start-new__button.focus > span, .full-start__buttons .selector.focus > span, .full-start__buttons .full-start__button.hover > span, .full-start__buttons .full-start-new__button.hover > span, .full-start__buttons .selector.hover > span {' +
+        '  max-width: 12em !important; opacity: 1 !important; margin-left: .55em !important;' +
         '}');
       rules.push('.full-start-new__buttons .full-start__button svg, .full-start-new__buttons .full-start-new__button svg, .full-start-new__buttons .selector svg, .full-start__buttons .full-start__button svg, .full-start__buttons .full-start-new__button svg, .full-start__buttons .selector svg {' +
         '  width: calc(var(--lampac-btn-font, 0.85em) * 1.35) !important; height: calc(var(--lampac-btn-font, 0.85em) * 1.35) !important;' +
@@ -3097,120 +3196,33 @@
       }
 
       if (mobileStyle === 'interface1') {
-        rules.push('@media screen and (max-width: 480px) {' +
-          ' .full-start-new, .full-start, .full-start-new__body {' +
-          ' min-height: 100vh !important; min-height: 100svh !important; height: 100vh !important; height: 100svh !important; width: 100% !important; max-width: 100% !important; margin-left: auto !important; margin-right: auto !important; background: transparent !important;' +
-          ' }' +
-          ' .scroll__body, .scroll__content, .activity.activity--active, .activity--active {' +
-          ' background: #1b1c1f !important; margin-left: auto !important; margin-right: auto !important;' +
-          ' }' +
-          ' .full-start-new__body {' +
-          ' display: flex !important; align-items: stretch !important; justify-content: center !important; min-height: 100svh !important; height: 100svh !important; padding: 0 !important; position: relative !important; left: 0 !important; right: 0 !important;' +
-          ' }' +
-          ' .full-start-new__left {' +
-          ' display: block !important; position: absolute !important; top: 0 !important; bottom: 0 !important; left: 50% !important; right: auto !important; transform: translateX(-50%) !important; width: 100% !important; max-width: 100% !important; min-height: 100svh !important; height: 100% !important; margin: 0 auto !important; z-index: 0 !important; pointer-events: none !important;' +
-          ' }' +
-          ' .full-start-new__poster {' +
-          ' width: 100% !important; max-width: 100% !important; min-height: 100svh !important; height: 100% !important; display: block !important; position: relative !important; margin-left: auto !important; margin-right: auto !important; z-index: 0 !important; border-radius: 0 !important; overflow: hidden !important;' +
-          ' }' +
-          ' .full-start-new__poster::before {' +
-          ' content: "" !important; position: absolute !important; left: 0 !important; right: 0 !important; bottom: -1px !important; height: 48vh !important; z-index: 2 !important; pointer-events: none !important;' +
-          ' background: linear-gradient(to bottom, rgba(14,16,19,0) 0%, rgba(14,16,19,0.08) 18%, rgba(14,16,19,0.24) 36%, rgba(18,19,21,0.52) 58%, rgba(24,25,28,0.82) 78%, #1b1c1f 100%) !important;' +
-          ' }' +
-          ' .full-start-new__img, .full--poster {' +
-          ' display: block !important; width: 100% !important; min-height: 100svh !important; height: 100% !important; object-fit: cover !important; opacity: 0.92 !important; filter: brightness(0.7) saturate(0.9) !important; position: relative !important; z-index: 0 !important;' +
-          ' }' +
-          ' .full-start-new__poster::after {' +
-          ' content: "" !important; position: absolute !important; inset: 0 !important; z-index: 1 !important;' +
-          ' background: linear-gradient(to bottom, rgba(10,12,14,0.08) 0%, rgba(10,12,14,0.12) 14%, rgba(10,12,14,0.2) 26%, rgba(10,12,14,0.34) 40%, rgba(18,19,21,0.5) 54%, rgba(23,24,27,0.7) 68%, rgba(27,28,31,0.88) 82%, #1b1c1f 100%) !important;' +
-          ' }' +
-          ' .full-start__background, .full-start__background.loaded, img.full-start__background {' +
-          ' display: none !important;' +
-          ' }' +
-          ' .full-start-new::before, .full-start-new::after {' +
-          ' display: none !important;' +
-          ' }' +
-          ' .full-start-new__head, .full-start-new__title, .full-start__rate, .full-start-new__reactions, .full-start-new__rate-line, .full-start-new__buttons, .full-start-new__details, .full-start-new__tagline {' +
-          ' justify-content: center !important; text-align: center !important; max-width: 100% !important;' +
-          ' }' +
-          ' .full-start-new__right {' +
-          ' position: relative !important; z-index: 10 !important; isolation: isolate !important;' +
-          ' width: 100% !important; max-width: 100% !important; min-height: 100vh !important; min-height: 100svh !important; height: 100vh !important; height: 100svh !important;' +
-          ' display: flex !important; flex-direction: column !important; justify-content: flex-end !important; align-items: center !important;' +
-          ' left: 50% !important; transform: translateX(-50%) !important; padding: 0 1.4em 8.8em 1.4em !important; box-sizing: border-box !important; margin-left: 0 !important; margin-right: 0 !important;' +
-          ' background: transparent !important;' +
-          ' row-gap: 0.18em !important;' +
-          ' }' +
-          ' .full-start-new__right::before {' +
-          ' content: "" !important; position: absolute !important; inset: 0 !important; z-index: 1 !important; pointer-events: none !important;' +
-          ' background: linear-gradient(to bottom, rgba(18,19,21,0) 0%, rgba(18,19,21,0.04) 26%, rgba(18,19,21,0.1) 40%, rgba(18,19,21,0.2) 52%, rgba(18,19,21,0.38) 64%, rgba(18,19,21,0.62) 76%, rgba(27,28,31,0.86) 88%, #1b1c1f 100%) !important;' +
-          ' }' +
-          ' .full-start-new__right > * {' +
-          ' position: relative !important; z-index: 2 !important; margin-left: auto !important; margin-right: auto !important;' +
-          ' }' +
-          ' .full-start-new__head, .full-start-new__logo, .full-start-new__title, .full-start-new__tagline, .full-start-new__details, .full-start-new__buttons {' +
-          ' width: min(100%, 22em) !important; max-width: 22em !important; margin-left: auto !important; margin-right: auto !important;' +
-          ' }' +
-          ' .full-start-new__rate-line, .full-start-new__reactions {' +
-          ' width: min(100%, 24.6em) !important; max-width: 24.6em !important; margin-left: auto !important; margin-right: auto !important; flex: none !important;' +
-          ' }' +
-          ' .full-start-new__reactions {' +
-          ' width: min(100%, 31em) !important; max-width: 31em !important;' +
-          ' }' +
-          ' .full-start-new__rate-line {' +
-          ' display: inline-flex !important; flex-wrap: wrap !important; align-items: center !important; justify-content: center !important; gap: 0.42em !important;' +
-          ' }' +
-          ' .full-start-new__reactions {' +
-          ' display: inline-flex !important; flex-wrap: nowrap !important; align-items: center !important; justify-content: center !important; gap: 0.42em !important; overflow-x: auto !important; overflow-y: hidden !important; white-space: nowrap !important;' +
-          ' }' +
-          ' .full-start-new__title {' +
-          ' font-size: 2.05em !important; line-height: 1.08 !important; margin: 0.18em 0 0 0 !important;' +
-          ' }' +
-          ' .full-start-new__logo {' +
-          ' display: flex !important; justify-content: center !important; align-items: center !important; width: 100% !important; margin: 0 0 0.75em 0 !important; min-height: 0 !important;' +
-          ' }' +
-          ' .full-start-new__logo img {' +
-          ' display: block !important; width: auto !important; max-width: min(100%, 38em) !important; max-height: 13.2em !important; object-fit: contain !important; margin: 0 auto !important;' +
-          ' }' +
-          ' .full-start-new.alcopac-full-has-logo .full-start-new__title {' +
-          ' display: none !important;' +
-          ' }' +
-          ' .full-start__title-original {' +
-          ' display: none !important;' +
-          ' }' +
-          ' .full-start-new__tagline {' +
-          ' margin-top: 0.75em !important;' +
-          ' }' +
-          ' .full-start-new__head, .full-start-new__details, .full-start-new__rate-line, .full-start-new__reactions {' +
-          ' margin-top: 0.32em !important; margin-bottom: 0 !important;' +
-          ' }' +
-          ' .full-start-new__buttons {' +
-          ' margin-top: 0.85em !important; padding-bottom: 0.4em !important;' +
-          ' display: grid !important; grid-template-columns: repeat(5, minmax(0, 1fr)) !important; gap: 0.55em !important;' +
-          ' width: min(100%, 22.8em) !important; max-width: 22.8em !important; overflow: visible !important; justify-items: center !important; align-items: stretch !important; justify-content: center !important; margin-left: auto !important; margin-right: auto !important;' +
-          ' }' +
-          ' .full-start-new__buttons .full-start__button, .full-start-new__buttons .full-start-new__button, .full-start-new__buttons .selector, .full-start__buttons .full-start__button, .full-start__buttons .full-start-new__button, .full-start__buttons .selector {' +
-          ' width: 100% !important; min-width: 0 !important; height: 3.35em !important; padding: 0.35em !important; border-radius: 0.95em !important;' +
-          ' display: inline-flex !important; justify-content: center !important; align-items: center !important;' +
-          ' }' +
-          ' .full-start-new__buttons .full-start__button > span, .full-start-new__buttons .full-start-new__button > span, .full-start__buttons .full-start__button > span, .full-start__buttons .full-start-new__button > span {' +
-          ' display: none !important;' +
-          ' }' +
-          ' .full-descr, .full-descr__text, .items-line, .items-line__body {' +
-          ' background: transparent !important;' +
-          ' }' +
-          ' .full-descr {' +
-          ' margin-top: 0 !important; padding-top: 0.4em !important;' +
-          ' }' +
-          '}');
+        rules.push('@media screen and (max-width: 480px) { .full-start-new__head, .full-start-new__title, .full-start__title-original, .full-start__rate, .full-start-new__reactions, .full-start-new__rate-line, .full-start-new__buttons, .full-start-new__details, .full-start-new__tagline { -webkit-justify-content: center; -moz-justify-content: center; -ms-flex-pack: center; justify-content: center; text-align: center; max-width: 100%; }}');
+        rules.push('@media screen and (max-width: 480px) { .full-start-new__right { background: -webkit-gradient(linear, left top, left bottom, from(rgba(0, 0, 0, 0)), to(rgba(0, 0, 0, 0))); background: -webkit-linear-gradient(top, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0) 100%); background: -moz-linear-gradient(top, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0) 100%); background: -o-linear-gradient(top, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0) 100%); background: linear-gradient(to bottom, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0) 100%); }}');
         rules.push('@media screen and (min-width: 581px) { .full-start-new__left { width: 21em !important; } }');
-        rules.push('@media screen and (max-width: 480px) {' +
-          ' .full-start-new__rate-line .full-start__pg, .full-start__pg, .full-start__status { font-size: 1em !important; background: #fff !important; color: #000 !important; }' +
-          ' .full-start__rate { border-radius: 0.25em !important; padding: 0.3em !important; background-color: rgba(0, 0, 0, 0.3) !important; }' +
-          '}');
-        rules.push('@media screen and (max-width: 580px) { .full-start-new__buttons, .full-start__buttons { overflow: visible !important; } }');
+        rules.push('.full-start-new__rate-line .full-start__pg { font-size: 1em; background: rgba(255,255,255,0.16); color: #fff; border: 1px solid rgba(255,255,255,0.22); }');
+        rules.push('.full-start__rate { border-radius: 0.25em; padding: 0.3em; background-color: rgba(0, 0, 0, 0.3); }');
+        rules.push('.full-start__pg, .full-start__status { font-size: 1em; background: rgba(255,255,255,0.16); color: #fff; border: 1px solid rgba(255,255,255,0.22); }');
+        rules.push('@media screen and (max-width: 580px) { .full-start-new__buttons, .full-start__buttons { overflow: visible !important; overflow-x: visible !important; -webkit-overflow-scrolling: auto !important; flex-wrap: wrap !important; justify-content: center !important; row-gap: .55em !important; } .full-start-new__buttons .full-start__button:not(.focus) span, .full-start-new__buttons .full-start-new__button:not(.focus) span, .full-start-new__buttons .selector:not(.focus) span, .full-start__buttons .full-start__button:not(.focus) span, .full-start__buttons .full-start-new__button:not(.focus) span, .full-start__buttons .selector:not(.focus) span { display: none !important; } }');
         rules.push('.full-start__background.loaded { opacity: 0.85; }');
         rules.push('.full-start__background.dim { opacity: 0.2; }');
+        rules.push('.card__title { height: 3.6em; text-overflow: ellipsis; -o-text-overflow: ellipsis; -webkit-line-clamp: 3; line-clamp: 3; }');
+        rules.push('.card__age { position: absolute; right: 0em; bottom: 0em; z-index: 10; background: rgba(0, 0, 0, 0.6); color: #ffffff; font-weight: 700; padding: 0.4em 0.6em; border-radius: 0.48em 0 0.48em 0; line-height: 1.0; font-size: 1.0em; }');
+        rules.push('.card__vote { position: absolute; bottom: auto; right: 0em; top: 0em; background: rgba(0, 0, 0, 0.6); font-weight: 700; color: #fff; border-radius: 0 0.34em 0 0.34em; line-height: 1.0; font-size: 1.15em; }');
+        rules.push('.card--tv .card__type, .card__type { font-size: 1em; background: transparent; color: transparent; left: 0; top: 0; }');
+        rules.push('.card__type::after { content: "СЕРИАЛ"; position: absolute; left: 0; top: 0; padding: 0.4em 0.6em; border-radius: 0.4em 0 0.4em 0; font-weight: 700; }');
+        rules.push('.card__icons { position: absolute; top: 2em; left: 0; right: auto; display: flex; justify-content: center; background: rgba(0, 0, 0, 0.6); color: #fff; border-radius: 0 0.5em 0.5em 0; }');
+        rules.push('.card__icons-inner { background: rgba(0, 0, 0, 0); }');
+        rules.push('.card__marker { position: absolute; left: 0em; top: 4em; bottom: auto; background: rgba(0, 0, 0, 0.6); border-radius: 0 0.5em 0.5em 0; font-weight: 700; font-size: 1.0em; padding: 0.4em 0.6em; display: flex; align-items: center; line-height: 1.2; max-width: min(12em, 95%); box-sizing: border-box; }');
+        rules.push('.card__marker > span { max-width: min(12em, 95%); }');
+        rules.push('.card__quality { position: absolute; left: auto; right: 0em; bottom: 2.4em; padding: 0.26em 0.45em; font-weight: 700; font-size: 0.82em; line-height: 1; border-radius: 0.42em 0 0 0.42em; text-transform: uppercase; }');
+        rules.push('.card--small .card__view { margin-bottom: -0.5em; }');
+        rules.push('.full-review-add, .full-review, .extensions__item, .extensions__block-add, .search-source, .bookmarks-folder__layer, .bookmarks-folder__body, .card__img, .card__promo, .full-episode--next .full-episode__img:after, .full-episode__img img, .full-episode__body, .full-person__photo, .card-more__box, .full-start__button, .simple-button, .register { border-radius: 0.5em; }');
+        rules.push('.extensions__item.focus::after, .extensions__block-add.focus::after, .full-episode.focus::after, .full-review-add.focus::after, .card-parser.focus::after, .card-episode.focus .full-episode::after, .card-episode.hover .full-episode::after, .card.focus .card__view::after, .card.hover .card__view::after, .card-more.focus .card-more__box::after, .register.focus::after { border-radius: 1em; }');
+        rules.push('.search-source.focus, .simple-button.focus, .menu__item.focus, .menu__item.traverse, .menu__item.hover, .full-start__button.focus, .full-descr__tag.focus, .player-panel .button.focus, .full-person.selector.focus, .tag-count.selector.focus { border-radius: 0.5em; }');
+        rules.push('.explorer__files .torrent-filter .simple-button { font-size: 1.2em; border-radius: 0.5em; }');
+        rules.push('.watched-history.focus::after, .full-episode.focus::after, .card-episode.focus .full-episode::after, .items-cards .selector.focus::after, .card-more.focus .card-more__box::after, .torrent-item.focus::after, .online-prestige.selector.focus::after, .online-prestige--full.selector.focus::after, .explorer-card__head-img.selector.focus::after, .extensions__item.focus::after, .extensions__block-add.focus::after, .full-review-add.focus::after { border: 0.24em solid #5cd4b0; box-shadow: 0 0 0.6em rgba(92, 212, 176, 0.18); }');
+        rules.push('@media (orientation: landscape) and (max-height: 500px) { .navigation-bar { position: fixed !important; bottom: 0 !important; left: 0 !important; right: 0 !important; top: auto !important; z-index: 999 !important; } .navigation-bar__body { flex-direction: row !important; height: auto !important; width: 100% !important; padding: 0.3em 0 !important; gap: 0.2em !important; } .navigation-bar__item { flex: 1 !important; } .navigation-bar__item-icon { width: 1.3em !important; height: 1.3em !important; } .navigation-bar__item-text { font-size: 0.6em !important; } .wrap { padding-right: 0 !important; } .wrap__content { width: 100% !important; } body { padding-bottom: 3.5em !important; } }');
+        rules.push('@media (orientation: landscape) and (max-height: 500px) { .full-start-new { min-height: 100vh !important; } .full-start-new__title { font-size: 2.2em !important; } .full-start-new__right { max-width: 55% !important; } .cinema-descr { -webkit-line-clamp: 2 !important; } }');
       }
 
       rules.push('.full-start-new__buttons { margin-top: 0.45em !important; }');
@@ -3458,7 +3470,6 @@
       Lampa.Template.add('settings_theme_screen', '<div></div>');
       Lampa.Template.add('settings_theme_screen_layout', '<div></div>');
       Lampa.Template.add('settings_theme_screen_compact', '<div></div>');
-      Lampa.Template.add('settings_theme_screen_buttons', '<div></div>');
       Lampa.Template.add('settings_theme_screen_logo', '<div></div>');
       Lampa.Template.add('settings_theme_screen_visual', '<div></div>');
       Lampa.Template.add('settings_theme_screen_profiles', '<div></div>');
@@ -3497,13 +3508,6 @@
 
     Lampa.SettingsApi.addParam({
       component: 'theme_screen',
-      param: { name: 'lampac_open_screen_buttons', type: 'button' },
-      field: { name: 'Кнопки', description: 'Размер, скрытие, порядок, мобильный вид' },
-      onChange: function () { openScreenSection('theme_screen_buttons'); },
-    });
-
-    Lampa.SettingsApi.addParam({
-      component: 'theme_screen',
       param: { name: 'lampac_open_screen_logo', type: 'button' },
       field: { name: 'Логотип', description: 'Лого вместо названия, размер, US fallback' },
       onChange: function () { openScreenSection('theme_screen_logo'); },
@@ -3514,13 +3518,6 @@
       param: { name: 'lampac_open_screen_visual', type: 'button' },
       field: { name: 'Визуал', description: 'Оверлей, контраст, рейтинги, реакции, затемнение' },
       onChange: function () { openScreenSection('theme_screen_visual'); },
-    });
-
-    Lampa.SettingsApi.addParam({
-      component: 'theme_screen',
-      param: { name: 'lampac_open_screen_profiles', type: 'button' },
-      field: { name: 'Профили', description: 'Раздельные профили desktop/tv' },
-      onChange: function () { openScreenSection('theme_screen_profiles'); },
     });
 
     Lampa.SettingsApi.addParam({
@@ -3536,24 +3533,6 @@
         description: 'Кинематограф — полноэкранный фон, без постера, контент внизу',
       },
       onChange: applyScreenStyle,
-    });
-
-    Lampa.SettingsApi.addParam({
-      component: 'theme_screen_layout',
-      param: {
-        name: 'lampac_screen_mobile_style',
-        type: 'select',
-        values: { interface1: 'Из interface1', off: 'Выключить' },
-        default: 'interface1',
-      },
-      field: {
-        name: 'Мобильная версия',
-        description: 'Перенесенный mobile-слой из interface1.js для экрана фильма',
-      },
-      onChange: function () {
-        registerInterface1MobileTemplate();
-        applyScreenStyle();
-      },
     });
 
     Lampa.SettingsApi.addParam({
@@ -3614,7 +3593,7 @@
     });
 
     Lampa.SettingsApi.addParam({
-      component: 'theme_screen_buttons',
+      component: 'theme_screen_visual',
       param: {
         name: 'lampac_screen_button_size_desktop',
         type: 'select',
@@ -3632,99 +3611,6 @@
     });
 
     Lampa.SettingsApi.addParam({
-      component: 'theme_screen_buttons',
-      param: {
-        name: 'lampac_screen_hide_extra_buttons',
-        type: 'select',
-        values: { off: 'Выключить', on: 'Включить' },
-        default: 'off',
-      },
-      field: {
-        name: 'Скрыть лишние кнопки',
-        description: 'Убирает реакцию, трейлер и лишние сервисные кнопки',
-      },
-      onChange: function () {
-        applyScreenStyle();
-        setTimeout(function () { promoteFolderButtons(true); }, 0);
-      },
-    });
-
-    Lampa.SettingsApi.addParam({
-      component: 'theme_screen_buttons',
-      param: {
-        name: 'lampac_screen_smart_order',
-        type: 'select',
-        values: { on: 'Включить', off: 'Выключить' },
-        default: 'on',
-      },
-      field: {
-        name: 'Умный порядок кнопок',
-        description: 'Онлайн → Торрент → Трейлер → Избранное',
-      },
-      onChange: function () {
-        applyScreenStyle();
-        setTimeout(function () { promoteFolderButtons(true); }, 0);
-      },
-    });
-
-    Lampa.SettingsApi.addParam({
-      component: 'theme_screen_buttons',
-      param: {
-        name: 'lampac_screen_button_order',
-        type: 'select',
-        values: {
-          'online,torrent,trailer,book': 'Онлайн → Торрент → Трейлер → Избранное',
-          'online,torrent,book,trailer': 'Онлайн → Торрент → Избранное → Трейлер',
-          'torrent,online,trailer,book': 'Торрент → Онлайн → Трейлер → Избранное',
-          'book,online,torrent,trailer': 'Избранное → Онлайн → Торрент → Трейлер'
-        },
-        default: 'online,torrent,trailer,book',
-      },
-      field: {
-        name: 'Порядок кнопок',
-        description: 'Приоритет кнопок на экране фильма',
-      },
-      onChange: function () {
-        applyScreenStyle();
-        setTimeout(function () { promoteFolderButtons(true); }, 0);
-      },
-    });
-
-    Lampa.SettingsApi.addParam({
-      component: 'theme_screen_buttons',
-      param: {
-        name: 'lampac_screen_buttons_folder',
-        type: 'select',
-        values: { off: 'Выключить', on: 'Включить' },
-        default: 'off',
-      },
-      field: {
-        name: 'Кнопка-папка источников',
-        description: 'Собирает Онлайн, Торрент, Трейлер и дополнительные кнопки просмотра в одну кнопку-папку',
-      },
-      onChange: function () {
-        applyScreenStyle();
-        setTimeout(function () { promoteFolderButtons(true); }, 0);
-      },
-    });
-
-
-    Lampa.SettingsApi.addParam({
-      component: 'theme_screen_visual',
-      param: {
-        name: 'lampac_screen_overlay_opacity',
-        type: 'select',
-        values: { '55': '55%', '65': '65%', '75': '75%', '88': '88%', '96': '96%' },
-        default: '88',
-      },
-      field: {
-        name: 'Прозрачность оверлея',
-        description: 'Интенсивность затемняющего оверлея на экране фильма',
-      },
-      onChange: applyScreenStyle,
-    });
-
-    Lampa.SettingsApi.addParam({
       component: 'theme_screen_visual',
       param: {
         name: 'lampac_screen_rating_style',
@@ -3736,18 +3622,6 @@
         name: 'Стиль рейтингов',
         description: 'Внешний вид IMDB, TMDB, Кинопоиск',
       },
-      onChange: applyScreenStyle,
-    });
-
-    Lampa.SettingsApi.addParam({
-      component: 'theme_screen_visual',
-      param: {
-        name: 'lampac_screen_ratings',
-        type: 'select',
-        values: { show: 'Показывать', hide: 'Скрыть' },
-        default: 'show',
-      },
-      field: { name: 'Рейтинги', description: 'Блок с оценками IMDB, TMDB, КП' },
       onChange: applyScreenStyle,
     });
 
@@ -4066,6 +3940,12 @@
         logoContainer.classList.add('loaded');
         root.classList.add('alcopac-full-has-logo');
         hideTitle();
+      }
+
+      var currentScene = Lampa.Storage.get('lampac_interface_scene', 'classic');
+      if (currentScene === 'classic') {
+        clearLogoForce();
+        return;
       }
 
       if (titleLogoSetting !== 'show') {
@@ -4605,24 +4485,8 @@
 
         buttonsEl.setAttribute('data-unfolded', '1');
 
-        try {
-          if (window.Lampa && Lampa.Controller) {
-            if (Lampa.Controller.toggle) Lampa.Controller.toggle('full_start');
-            if (Lampa.Controller.collectionSet) Lampa.Controller.collectionSet(buttons_container);
-          }
-        } catch (e) {}
-
         requestAnimationFrame(function () {
           buttonsEl.style.visibility = prevVisibility || '';
-          if (onlineBtn && onlineBtn.length) {
-            try {
-              if (window.Lampa && Lampa.Controller && Lampa.Controller.focus) {
-                Lampa.Controller.focus(onlineBtn[0]);
-              } else {
-                onlineBtn.addClass('focus');
-              }
-            } catch (e) {}
-          }
         });
       };
 
@@ -4725,6 +4589,7 @@
       style.type = 'text/css';
       style.textContent = buildOnlineCssFromTheme();
       document.head.appendChild(style);
+      normalizeCardYearPlacement(document);
     }
 
     function registerOnlineSettings() {
@@ -4832,7 +4697,6 @@
     }
 
     function stableFullBundle() {
-      try { promoteFolderButtons(true); } catch (e) {}
       try { applyTitleLogoRetry(); } catch (e) {}
       try { placeDetailsAfterTagline(); } catch (e) {}
       try { renderCompactMetaLine(); } catch (e) {}
@@ -4888,6 +4752,12 @@
       window.__lampac_auto_theme_timer = setInterval(applyAutoThemeByTime, 5 * 60 * 1000);
     }
     applyCardDisplay();
+    try {
+      if (!window.__lampac_card_year_observer) {
+        window.__lampac_card_year_observer = new MutationObserver(function(){ normalizeCardYearPlacement(document); });
+        window.__lampac_card_year_observer.observe(document.body || document.documentElement, { childList: true, subtree: true });
+      }
+    } catch (e) {}
     applyScreenStyle();
   }
 
@@ -5614,19 +5484,7 @@
     };
 
     A.full.focusPrimary = A.full.focusPrimary || function(){
-      try {
-        var info = A.full.findMainButtons ? A.full.findMainButtons(document) : null;
-        if (!info || !info.container) return false;
-        var btn = info.online || info.torrent || info.trailer;
-        if (!btn) return false;
-        if (window.Lampa && Lampa.Controller) {
-          var jq = window.$ ? $(info.container) : null;
-          if (Lampa.Controller.toggle) Lampa.Controller.toggle('full_start');
-          if (jq && Lampa.Controller.collectionSet) Lampa.Controller.collectionSet(jq);
-          if (Lampa.Controller.focus) Lampa.Controller.focus(btn);
-        }
-        return true;
-      } catch(e){ return false; }
+      return false;
     };
 
     A.full.reorderSafe = A.full.reorderSafe || function(){
@@ -5642,7 +5500,6 @@
             try {
               var after = A.full.getButtonsState();
               __atFullButtonsSig = after.signature || __atFullButtonsSig;
-              A.full.focusPrimary();
             } catch(e){}
             try { setButtonsPending(false); } catch(e){}
           }, 90);
@@ -5654,7 +5511,6 @@
 
     A.full.refreshOrdered = A.full.refreshOrdered || function(){
       try { A.full.refreshBundle ? A.full.refreshBundle() : (A.full.refreshHard && A.full.refreshHard()); } catch(e){}
-      setTimeout(function(){ try { A.full.reorderSafe(); } catch(e){} }, 50);
     };
 
     if (window.Lampa && Lampa.SettingsApi && !window.__alcopac_theme_r7_tools) {
@@ -5967,7 +5823,6 @@
     if (A.core && typeof A.core.flush === 'function') A.core.flush('full:');
     if (A.full && typeof A.full.refreshSoft === 'function') A.full.refreshSoft(); setTimeout(window.updateReactionCountsVisibility, 40);
     raf2(function(){
-      try { if (A.full && typeof A.full.reorderSafe === 'function') A.full.reorderSafe(); } catch(e){}
       try { if (A.full && typeof A.full.refreshSoft === 'function') A.full.refreshSoft(); setTimeout(window.updateReactionCountsVisibility, 40); } catch(e){}
     });
     return true;
@@ -6292,336 +6147,8 @@
 })();
 
 
-/* === AlcopacTheme: restore exact card focus after Back from full screen === */
-(function(){
-  'use strict';
-  if (window.__alcopac_back_focus_theme_fix_v3) return;
-  window.__alcopac_back_focus_theme_fix_v3 = true;
+/* === AlcopacTheme: card focus restore handled by global back restore === */
 
-  var state = {
-    selected: null,
-    beforeFull: null,
-    wasFull: false,
-    restoreTimers: [],
-    rememberTimer: 0
-  };
+/* ===== GLOBAL BACK FOCUS RESTORE disabled: keep native Lampa focus flow ===== */
 
-  function clearRestoreTimers(){
-    try { state.restoreTimers.forEach(function(t){ clearTimeout(t); }); } catch(e){}
-    state.restoreTimers = [];
-  }
-
-  function clearRememberTimer(){
-    try { clearTimeout(state.rememberTimer); } catch(e){}
-    state.rememberTimer = 0;
-  }
-
-  function isVisible(el){
-    try {
-      if (!el || !document.contains(el)) return false;
-      var r = el.getBoundingClientRect();
-      return !!(r.width || r.height || el.getClientRects().length);
-    } catch(e){ return false; }
-  }
-
-  function isFullOpen(){
-    return !!document.querySelector('.activity.activity--active .full-start-new, .activity.activity--active .full-start, .activity--active .full-start-new, .activity--active .full-start');
-  }
-
-  function normalizeText(txt){
-    return String(txt || '').replace(/\s+/g, ' ').trim();
-  }
-
-  function getCardTitle(card){
-    try {
-      var t = card.querySelector('.card__title, .card__name, .card__text, .card__label');
-      return normalizeText(t ? t.textContent : card.textContent);
-    } catch(e){ return ''; }
-  }
-
-  function getCardId(card){
-    try {
-      return normalizeText(
-        card.getAttribute('data-id') ||
-        card.getAttribute('data-card-id') ||
-        card.getAttribute('data-key') ||
-        (card.dataset && (card.dataset.id || card.dataset.cardId || card.dataset.key)) ||
-        ''
-      );
-    } catch(e){ return ''; }
-  }
-
-  function getLineWrap(card){
-    try { return card ? card.closest('.items-line') : null; } catch(e){ return null; }
-  }
-
-  function getLineBody(card){
-    try {
-      var wrap = getLineWrap(card);
-      return wrap ? (wrap.querySelector('.items-line__body') || wrap) : null;
-    } catch(e){ return null; }
-  }
-
-  function getLineCardsFromWrap(wrap){
-    try {
-      var root = wrap ? (wrap.querySelector('.items-line__body') || wrap) : null;
-      return root ? Array.prototype.slice.call(root.querySelectorAll('.card')) : [];
-    } catch(e){ return []; }
-  }
-
-  function getAllLineWraps(){
-    try { return Array.prototype.slice.call(document.querySelectorAll('.items-line')); } catch(e){ return []; }
-  }
-
-  function getLineTitle(wrap){
-    try {
-      var t = wrap && wrap.querySelector('.items-line__title, .items-line__head, .items-line__name');
-      return normalizeText(t ? t.textContent : '');
-    } catch(e){ return ''; }
-  }
-
-  function currentFocusedCard(){
-    try {
-      var cards = Array.prototype.slice.call(document.querySelectorAll('.items-line .card.focus, .items-line .card.hover, .items-line .card.card--focus, .items-line .card.selector.focus'));
-      if (!cards.length) return null;
-      for (var i = cards.length - 1; i >= 0; i--) {
-        if (isVisible(cards[i])) return cards[i];
-      }
-      return cards[cards.length - 1] || null;
-    } catch(e){ return null; }
-  }
-
-  function buildSnapshot(card){
-    try {
-      if (!card || !document.contains(card)) return null;
-      var wrap = getLineWrap(card);
-      var cards = getLineCardsFromWrap(wrap);
-      return {
-        id: getCardId(card),
-        title: getCardTitle(card),
-        lineTitle: getLineTitle(wrap),
-        lineIndex: getAllLineWraps().indexOf(wrap),
-        indexInLine: cards.indexOf(card),
-        ref: card
-      };
-    } catch(e){ return null; }
-  }
-
-  function rememberCard(card, hard){
-    try {
-      if (!card || isFullOpen()) return;
-      var snap = buildSnapshot(card);
-      if (!snap) return;
-      state.selected = snap;
-      if (hard) state.beforeFull = snap;
-    } catch(e){}
-  }
-
-  function rememberFocusedDelayed(hard, delay){
-    clearRememberTimer();
-    state.rememberTimer = setTimeout(function(){
-      if (isFullOpen()) return;
-      var focused = currentFocusedCard();
-      if (focused) rememberCard(focused, !!hard);
-    }, typeof delay === 'number' ? delay : 35);
-  }
-
-  function findBySnapshot(snap){
-    try {
-      if (!snap) return null;
-      if (snap.ref && document.contains(snap.ref) && isVisible(snap.ref)) return snap.ref;
-
-      var wraps = getAllLineWraps();
-      var wrap = null;
-
-      if (snap.lineTitle) {
-        for (var i = 0; i < wraps.length; i++) {
-          if (getLineTitle(wraps[i]) === snap.lineTitle) { wrap = wraps[i]; break; }
-        }
-      }
-      if (!wrap && snap.lineIndex > -1 && wraps[snap.lineIndex]) wrap = wraps[snap.lineIndex];
-
-      var scopedCards = wrap ? getLineCardsFromWrap(wrap) : Array.prototype.slice.call(document.querySelectorAll('.items-line .card'));
-      if (!scopedCards.length) return null;
-
-      if (snap.id) {
-        for (var j = 0; j < scopedCards.length; j++) {
-          if (getCardId(scopedCards[j]) === snap.id) return scopedCards[j];
-        }
-      }
-      if (snap.title) {
-        for (var k = 0; k < scopedCards.length; k++) {
-          if (getCardTitle(scopedCards[k]) === snap.title) return scopedCards[k];
-        }
-      }
-      if (wrap && snap.indexInLine > -1) {
-        var lineCards = getLineCardsFromWrap(wrap);
-        if (lineCards[snap.indexInLine]) return lineCards[snap.indexInLine];
-      }
-      return null;
-    } catch(e){ return null; }
-  }
-
-  function clearVisualFocus(){
-    try {
-      Array.prototype.slice.call(document.querySelectorAll('.items-line .card.focus, .items-line .card.hover, .items-line .card.card--focus')).forEach(function(card){
-        if (!card || !card.classList) return;
-        card.classList.remove('focus');
-        card.classList.remove('hover');
-        card.classList.remove('card--focus');
-      });
-    } catch(e){}
-  }
-
-  function setControllerCollection(card){
-    try {
-      if (!(window.Lampa && Lampa.Controller && window.$)) return;
-      var wrap = getLineWrap(card);
-      var cards = getLineCardsFromWrap(wrap);
-      if (!cards.length) return;
-      if (Lampa.Controller.toggle) {
-        try { Lampa.Controller.toggle('content'); } catch(e){}
-      }
-      if (Lampa.Controller.collectionSet) {
-        try { Lampa.Controller.collectionSet($(cards)); } catch(e){}
-      }
-    } catch(e){}
-  }
-
-  function restoreOnce(){
-    if (isFullOpen()) return false;
-    var snap = state.beforeFull || state.selected;
-    var card = findBySnapshot(snap);
-    if (!card) return false;
-
-    clearVisualFocus();
-    setControllerCollection(card);
-
-    try { if (card.scrollIntoView) card.scrollIntoView({ block: 'nearest', inline: 'center' }); } catch(e){}
-
-    try {
-      if (window.$) {
-        try { $(card).trigger('hover:focus'); } catch(e){}
-        try { $(card).trigger('mouseenter'); } catch(e){}
-      }
-      if (window.Lampa && Lampa.Controller && Lampa.Controller.focus) {
-        Lampa.Controller.focus(card);
-      }
-    } catch(e){}
-
-    try {
-      card.classList.add('focus');
-      card.classList.add('hover');
-    } catch(e){}
-
-    rememberCard(card, false);
-    return true;
-  }
-
-  function scheduleRestore(){
-    clearRestoreTimers();
-    [140, 320].forEach(function(delay){
-      state.restoreTimers.push(setTimeout(function(){
-        restoreOnce();
-      }, delay));
-    });
-  }
-
-  document.addEventListener('click', function(e){
-    var card = e.target && e.target.closest ? e.target.closest('.items-line .card') : null;
-    if (card && !isFullOpen()) rememberCard(card, true);
-  }, true);
-
-  document.addEventListener('keydown', function(e){
-    var key = e && (e.keyCode || e.which || e.code || e.key);
-
-    if (key === 13 || key === 'Enter' || key === 23) {
-      var focused = currentFocusedCard();
-      if (focused && !isFullOpen()) rememberCard(focused, true);
-      return;
-    }
-
-    if (key === 37 || key === 39 || key === 38 || key === 40 ||
-        key === 'ArrowLeft' || key === 'ArrowRight' || key === 'ArrowUp' || key === 'ArrowDown') {
-      clearRestoreTimers();
-      rememberFocusedDelayed(false, 45);
-    }
-  }, true);
-
-  try {
-    if (window.Lampa && Lampa.Listener && Lampa.Listener.follow) {
-      Lampa.Listener.follow('full', function(e){
-        try {
-          if (e && e.type === 'complite') {
-            var focused = currentFocusedCard();
-            if (focused && !isFullOpen()) rememberCard(focused, true);
-          }
-          if (e && (e.type === 'destroy' || e.type === 'close')) {
-            setTimeout(function(){
-              if (!isFullOpen()) scheduleRestore();
-            }, 90);
-          }
-        } catch(err){}
-      });
-
-      Lampa.Listener.follow('activity', function(){
-        setTimeout(function(){
-          if (!isFullOpen() && state.beforeFull) scheduleRestore();
-        }, 140);
-      });
-    }
-  } catch(e){}
-})();
-
-/* ===== TORRENT FOCUS FIX (CLEAN v2) ===== */
-
-var LampaTorrentFix = (function(){
-
-    let torrentMode = false;
-
-    document.addEventListener('keydown', function(e){
-        if(e.keyCode === 13){
-            const active = document.querySelector('.full-start__button.focus, .full-start__button.hover');
-
-            if(active && active.textContent && active.textContent.toLowerCase().includes('торрент')){
-                torrentMode = true;
-            }
-        }
-    });
-
-    Lampa.Listener.follow('activity', function(){
-        if(!torrentMode) return;
-
-        setTimeout(setFocus,150);
-        setTimeout(setFocus,350);
-        setTimeout(function(){
-            setFocus();
-            torrentMode = false;
-        },700);
-    });
-
-    function setFocus(){
-        const first = document.querySelector(
-            '.torrent-item, .file-item, .selector__item, .explorer__item'
-        );
-
-        if(!first) return;
-
-        document.querySelectorAll('.focus,.hover').forEach(function(el){
-            el.classList.remove('focus');
-            el.classList.remove('hover');
-        });
-
-        first.classList.add('focus');
-
-        if(window.Lampa && Lampa.Controller){
-            try{
-                if(first.parentNode) Lampa.Controller.collectionSet(first.parentNode);
-                Lampa.Controller.focus(first);
-            } catch(e){}
-        }
-    }
-
-    return true;
-
-})();
+/* ===== TORRENT FOCUS FIX disabled: focus handled by global back restore ===== */
